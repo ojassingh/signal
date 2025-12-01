@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "radian",
+      "name": "signal",
       "dependencies": {
         "@radix-ui/react-slot": "^1.2.4",
         "class-variance-authority": "^0.7.1",
