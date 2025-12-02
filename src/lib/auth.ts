@@ -1,6 +1,5 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { sendWelcomeEmail } from "@/actions/email";
 import { db } from "@/db/drizzle";
@@ -13,18 +12,18 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
-  hooks: {
-    after: createAuthMiddleware(async (ctx) => {
-      if (ctx.path.startsWith("/sign-up")) {
-        const newSession = ctx.context.newSession;
-        if (newSession) {
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
           await sendWelcomeEmail({
-            to: newSession.user.email,
-            name: newSession.user.name,
+            email: user.email,
+            name: user.name,
           });
-        }
-      }
-    }),
+          console.log("Onboarding: Email sent to new user", user.email);
+        },
+      },
+    },
   },
   socialProviders: {
     github: {
