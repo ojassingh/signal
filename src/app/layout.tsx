@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
 import Script from "next/script";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -11,7 +11,8 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: "Signal | AI Platform for Revenue-First Analytics",
-  description: "Signal is an AI revenue-first analytics platform for high-growth startups",
+  description:
+    "Signal is an AI revenue-first analytics platform for high-growth startups",
 };
 
 export default function RootLayout({
@@ -21,19 +22,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <Script
-        defer
-        data-website-id="radian_test_123"
-        src="/track.js"
-      />
-      <body
-        className={`${geistSans.className} antialiased`}
-      >
+      <Script data-website-id="radian_test_123" defer src="/track.js" />
+      <body className={`${geistSans.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
-          enableSystem
           disableTransitionOnChange
+          enableSystem
         >
           {children}
         </ThemeProvider>
