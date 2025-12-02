@@ -10,7 +10,7 @@ export default function Home() {
         </Link>
       </header>
       <main className="flex-1 flex items-center justify-center">
-        <h1 className="text-4xl font-bold">Signal home page</h1>
+        <h1 className="text-4xl">Signal home page</h1>
       </main>
     </div>
   );
