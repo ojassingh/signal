@@ -1,6 +1,8 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
+import { sendWelcomeEmail } from "@/actions/email";
 import { db } from "@/db/drizzle";
 // biome-ignore lint/performance/noNamespaceImport: we need to use the schema object
 import * as schema from "@/db/schema";
@@ -11,6 +13,19 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path.startsWith("/sign-up")) {
+        const newSession = ctx.context.newSession;
+        if (newSession) {
+          await sendWelcomeEmail({
+            to: newSession.user.email,
+            name: newSession.user.name,
+          });
+        }
+      }
+    }),
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID as string,
