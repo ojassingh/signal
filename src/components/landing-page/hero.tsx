@@ -13,7 +13,10 @@ export function Hero() {
           <span className="text-primary">fast</span>.
         </p>
         <div className="mt-6 flex place-content-center gap-2">
-          <Button className="rounded-full text-white">
+          <Button
+            className="inset-shadow-primary inset-shadow-sm rounded-full text-white"
+            variant="outline"
+          >
             Start 14-day free trial
           </Button>
           <Button className="rounded-full" variant="outline">
