@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { AuthButton } from "@/components/auth-buttons"
+import { AuthButton } from "@/app/(auth)/components/auth-buttons"
 
 export default function SignUpPage() {
   return (
