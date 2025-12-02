@@ -9,7 +9,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Signal - AI Revenue-First Analytics",
+  title: "Signal | AI Platform for Revenue-First Analytics",
   description: "Signal is an AI revenue-first analytics platform for high-growth startups",
 };
 
