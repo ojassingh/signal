@@ -182,6 +182,9 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+
+  /* custom values*/
+  --inset-shadow-md: inset 0 3px 4px rgba(0, 0, 0, 0.25);
 }
 
 @layer base {

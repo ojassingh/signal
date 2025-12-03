@@ -14,6 +14,13 @@ export function Nav() {
         <div className="flex items-center gap-4">
           <Link
             className="transition-colors duration-100 hover:text-muted-foreground"
+            href="https://cal.com/ojas-singh/signal-demo"
+            target="_blank"
+          >
+            Demo
+          </Link>
+          <Link
+            className="transition-colors duration-100 hover:text-muted-foreground"
             href="/#pricing"
           >
             Pricing
