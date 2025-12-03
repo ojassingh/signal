@@ -4,13 +4,12 @@ export function Hero() {
   return (
     <div className="grid h-screen grid-rows-12 place-content-center">
       <div className="row-start-4 mx-auto max-w-xl text-center">
-        <h1 className="mt-4 text-5xl">
+        <h1 className="mt-4 font-medium text-5xl tracking-tight">
           Signal is an AI assistant for revenue analytics
         </h1>
-        <p className="mt-6 text-lg text-muted-foreground">
-          Signal studies your users while keeping your data safe to provide
-          suggestions to get to product-market fit{" "}
-          <span className="text-primary">fast</span>.
+        <p className="mt-6 text-pretty text-lg text-muted-foreground">
+          Signal tracks which marketing channels drive growth <br /> and shows
+          you how to scale them.
         </p>
         <div className="mt-6 flex place-content-center gap-2">
           <Button
