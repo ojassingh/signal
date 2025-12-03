@@ -2,12 +2,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { head, split } from "lodash";
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getUserSites } from "@/actions/sites";
 import { AddSiteDialog } from "@/app/(app)/dashboard/components/add-site-dialog";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { useSession } from "@/lib/auth-client";
+import { signOut, useSession } from "@/lib/auth-client";
 
 export default function DashboardPage() {
   const { data: result, isLoading } = useQuery({
@@ -36,7 +37,17 @@ export default function DashboardPage() {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl">Welcome back, {name}!</h1>
-        <AddSiteDialog />
+        <div className="flex items-center gap-2">
+          <AddSiteDialog />
+          <LogOut
+            className="size-4"
+            onClick={() => {
+              signOut().then(() => {
+                router.push("/");
+              });
+            }}
+          />
+        </div>
       </div>
 
       {sites.length > 0 ? (

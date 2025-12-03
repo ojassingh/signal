@@ -7,7 +7,7 @@ export default async function WebsitePage({
 
   return (
     <div>
-      <h1 className="font-semibold text-3xl">Site: {websiteId}</h1>
+      <h1 className="text-2xl">Site: {websiteId}</h1>
     </div>
   );
 }

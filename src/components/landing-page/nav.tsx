@@ -33,7 +33,7 @@ export function Nav() {
           </Link>
         </div>
         <Link href="/sign-in">
-          <Button size="sm" variant="sexy">
+          <Button className="rounded-full" size="sm" variant="outline">
             Sign In
           </Button>
         </Link>
