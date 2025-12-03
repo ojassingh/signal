@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { QueryProvider } from "@/components/query-provider";
 import { auth } from "@/lib/auth";
 
 export default async function AppLayout({
@@ -15,5 +16,9 @@ export default async function AppLayout({
     redirect("/sign-in");
   }
 
-  return <>{children}</>;
+  return (
+    <QueryProvider>
+      <div className="mx-auto max-w-7xl p-8">{children}</div>
+    </QueryProvider>
+  );
 }
