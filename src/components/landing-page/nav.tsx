@@ -33,11 +33,7 @@ export function Nav() {
           </Link>
         </div>
         <Link href="/sign-in">
-          <Button
-            className="inset-shadow-primary inset-shadow-sm rounded-full"
-            size="sm"
-            variant="outline"
-          >
+          <Button size="sm" variant="sexy">
             Sign In
           </Button>
         </Link>

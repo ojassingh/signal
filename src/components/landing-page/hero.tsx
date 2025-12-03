@@ -13,10 +13,7 @@ export function Hero() {
           shows how to scale them fast.
         </p>
         <div className="mt-6 flex place-content-center gap-2">
-          <Button
-            className="inset-shadow-md inset-shadow-primary rounded-full text-white backdrop-blur-sm"
-            variant="outline"
-          >
+          <Button className="inset-shadow-md" variant="sexy">
             Start 14-day free trial
           </Button>
           <Button className="rounded-full backdrop-blur-sm" variant="outline">
