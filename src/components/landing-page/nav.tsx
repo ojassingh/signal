@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 
 export function Nav() {
   return (
-    <header className="sticky top-0 py-3">
-      <div className="mx-auto flex max-w-7xl justify-between">
+    <header className="sticky top-0 border-b px-8 py-3">
+      <div className="flex justify-between">
         <Link className="flex items-center gap-2" href="/">
           <Image alt="Signal" height={25} src={icon} width={25} />
           <span className="text-lg">Signal</span>

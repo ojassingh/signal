@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 
 export function Hero() {
   return (
-    <main className="grid h-screen grid-rows-12 place-content-center">
+    <div className="grid h-screen grid-rows-12 place-content-center">
       <div className="row-start-4 mx-auto max-w-xl text-center">
         <h1 className="mt-4 text-5xl">
           Signal is an AI assistant for revenue analytics
@@ -24,6 +24,6 @@ export function Hero() {
           </Button>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
