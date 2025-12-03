@@ -18,7 +18,7 @@
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        website_id: websiteId,
+        siteId: websiteId,
         visitor_id: getVisitorId(),
         event,
         path: url.pathname,
