@@ -1,33 +1,36 @@
+import { geolocation } from "@vercel/functions";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const event = await req.json();
-  const ip =
-    req.headers.get("x-forwarded-for") ||
-    req.headers.get("x-real-ip") ||
-    "127.0.0.1";
+  console.log("Ingest route triggered");
+  const body = await req.json();
+  const { country, city } = geolocation(req);
 
-  console.log("📥 Ingesting event:", {
-    type: event,
-    ip,
-  });
+  const tinybirdPayload = {
+    timestamp: body.timestamp,
+    visitor_id: body.visitor_id,
+    siteId: body.siteId,
+    page_url: body.page_url,
+    referrer: body.referrer || "",
+    event: body.event,
+    path: body.path,
+    country,
+    city,
+  };
 
-  //   await fetch(
-  //     `https://api.tinybird.co/v0/events?name=events&token=${process.env.TINYBIRD_TOKEN}`,
-  //     {
-  //       method: 'POST',
-  //       body: JSON.stringify({ ...event, ip })
-  //     }
-  //   );
+  console.log("Ingest route payload:", tinybirdPayload);
+  const TINYBIRD_API_URL =
+    process.env.TINYBIRD_API_URL || "https://api.us-east.tinybird.co";
 
-  return new NextResponse("ok", {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
+  await fetch(
+    `${TINYBIRD_API_URL}/v0/events?name=events&token=${process.env.TINYBIRD_TOKEN}`,
+    {
+      method: "POST",
+      body: JSON.stringify(tinybirdPayload),
+    }
+  );
+
+  return new NextResponse("ok");
 }
 
 export function OPTIONS() {
