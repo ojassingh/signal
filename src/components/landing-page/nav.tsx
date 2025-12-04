@@ -31,6 +31,13 @@ export function Nav() {
           >
             FAQ
           </Link>
+          <Link
+            className="transition-colors duration-100 hover:text-muted-foreground"
+            href="https://docs.signal.com"
+            target="_blank"
+          >
+            Docs
+          </Link>
         </div>
         <Link href="/sign-in">
           <Button className="rounded-full" size="sm" variant="outline">
