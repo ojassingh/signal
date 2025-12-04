@@ -1,0 +1,14 @@
+SCHEMA >
+    `timestamp` DateTime,
+    `visitor_id` String,
+    `siteId` String,        
+    `page_url` String,
+    `referrer` String,
+    `event` String,
+    `path` String,           
+    `country` String,
+    `city` String
+
+ENGINE "MergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
+ENGINE_SORTING_KEY "timestamp, siteId"
