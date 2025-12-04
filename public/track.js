@@ -11,27 +11,19 @@
     return visitorId;
   }
 
-  function track(event, props = {}) {
-    const url = new URL(window.location.href);
-
+  function track(event) {
     fetch("/api/ingest", {
       method: "POST",
+      keepalive: true,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         siteId: websiteId,
         visitor_id: getVisitorId(),
         event,
-        path: url.pathname,
-        referrer: document.referrer || null,
-        utm_source: url.searchParams.get("utm_source"),
-        utm_medium: url.searchParams.get("utm_medium"),
-        utm_campaign: url.searchParams.get("utm_campaign"),
-        screen_width: window.screen.width,
-        screen_height: window.screen.height,
-        language: navigator.language,
-        ua: navigator.userAgent,
         timestamp: new Date().toISOString(),
-        ...props,
+        path: window.location.pathname,
+        page_url: window.location.href,
+        referrer: document.referrer || "",
       }),
     });
   }
