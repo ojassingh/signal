@@ -1,0 +1,14 @@
+{
+    "host": "https://api.us-east.aws.tinybird.co",
+    "id": "dbc29a53-95dc-4dcf-8223-51e1df6a0e36",
+    "name": "signal",
+    "scope": "user",
+    "token": "p.eyJ1IjogImRiYzI5YTUzLTk1ZGMtNGRjZi04MjIzLTUxZTFkZjZhMGUzNiIsICJpZCI6ICJhOTc2NzZlZi00MzgyLTQxODQtODFjMi1kYWRkMjgxZDk1NzgiLCAiaG9zdCI6ICJ1cy1lYXN0LWF3cyJ9.evbBW1Ko6nOFwFdqlFbtOqyHHHiujpVX2Xybn6sDTgs",
+    "tokens": {
+        "https://api.us-east.aws.tinybird.co": "p.eyJ1IjogImRiYzI5YTUzLTk1ZGMtNGRjZi04MjIzLTUxZTFkZjZhMGUzNiIsICJpZCI6ICJhOTc2NzZlZi00MzgyLTQxODQtODFjMi1kYWRkMjgxZDk1NzgiLCAiaG9zdCI6ICJ1cy1lYXN0LWF3cyJ9.evbBW1Ko6nOFwFdqlFbtOqyHHHiujpVX2Xybn6sDTgs"
+    },
+    "user_email": "ojas.singh02@gmail.com",
+    "user_id": "0b87a91b-d898-4409-ac5b-87d279d53ef3",
+    "user_token": "p.eyJ1IjogIjBiODdhOTFiLWQ4OTgtNDQwOS1hYzViLTg3ZDI3OWQ1M2VmMyIsICJpZCI6ICJmMGFiMWFlMC1mZTc5LTQ3YTItYTA4MC1jN2Q1OWVkZDAxMWEiLCAiaG9zdCI6ICJ1cy1lYXN0LWF3cyJ9.bfDNxso8mdKHbQgnnF0Ets5qENsxypL3GcnWTlmWOzw",
+    "version": "0.0.1.dev326"
+}
