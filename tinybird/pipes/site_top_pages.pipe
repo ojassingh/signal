@@ -1,0 +1,18 @@
+DESCRIPTION >
+    Get top pages by pageviews
+
+TOKEN "read_token" READ
+
+NODE endpoint
+SQL >
+    %
+    SELECT 
+        path,
+        count() as pageviews
+    FROM events
+    WHERE siteId = {{ String(site_id, required=True) }}
+    GROUP BY path
+    ORDER BY pageviews DESC
+    LIMIT {{ Int32(limit, 10) }}
+
+TYPE endpoint

@@ -1,0 +1,15 @@
+DESCRIPTION >
+    Get total pageviews and unique visitors for a site
+
+TOKEN "read_token" READ
+
+NODE endpoint
+SQL >
+    %
+    SELECT 
+        count() as pageviews,
+        uniq(visitor_id) as visitors
+    FROM events
+    WHERE siteId = {{ String(site_id, required=True) }}
+
+TYPE endpoint

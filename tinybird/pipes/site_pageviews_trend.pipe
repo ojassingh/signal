@@ -1,0 +1,19 @@
+DESCRIPTION >
+    Get pageviews trend over time
+
+TOKEN "read_token" READ
+
+NODE endpoint
+SQL >
+    %
+    SELECT 
+        toDate(timestamp) as date,
+        count() as pageviews,
+        uniq(visitor_id) as visitors
+    FROM events
+    WHERE siteId = {{ String(site_id, required=True) }}
+    GROUP BY date
+    ORDER BY date DESC
+    LIMIT {{ Int32(days, 30) }}
+
+TYPE endpoint

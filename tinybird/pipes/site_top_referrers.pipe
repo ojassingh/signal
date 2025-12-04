@@ -1,0 +1,19 @@
+DESCRIPTION >
+    Get top referrers by pageviews
+
+TOKEN "read_token" READ
+
+NODE endpoint
+SQL >
+    %
+    SELECT 
+        referrer,
+        count() as pageviews
+    FROM events
+    WHERE siteId = {{ String(site_id, required=True) }}
+        AND referrer != ''
+    GROUP BY referrer
+    ORDER BY pageviews DESC
+    LIMIT {{ Int32(limit, 10) }}
+
+TYPE endpoint
