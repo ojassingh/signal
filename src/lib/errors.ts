@@ -25,4 +25,10 @@ export const SignalError = {
       error: "Site not found",
     }),
   },
+  Analytics: {
+    FetchFailed: (): ActionError => ({
+      success: false,
+      error: "Failed to fetch analytics data",
+    }),
+  },
 };
