@@ -1,3 +1,11 @@
+<p align="center">
+  <img width="100" height="100" alt="icon" src="https://github.com/user-attachments/assets/f6f9d7b0-d188-45e7-b73d-6262594c71a8" /> 
+</p>
+
+<p align="center">
+  Signal is privacy-first revenue analytics platform. More to come.
+</p>
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
