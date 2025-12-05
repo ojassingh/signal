@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  Signal is privacy-first, minimal revenue analytics platform. More to come.
+  Signal is a minimal privacy-first revenue analytics platform. More to come.
 </p>
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
