@@ -2,13 +2,24 @@
 
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
-import { z } from "zod";
 import { db } from "@/db/drizzle";
 import { sites } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { SignalError } from "@/lib/errors";
 import { queryPipe } from "@/lib/tinybird";
-import type { ActionResult, Site, SiteStats } from "@/lib/types";
+import type {
+  ActionResult,
+  DashboardOptions,
+  DashboardRow,
+  Site,
+  SiteStats,
+} from "@/lib/types";
+import { DateRangeKey, Grain } from "@/lib/types";
+import {
+  computeRange,
+  reduceDashboardRows,
+  siteIdSchema,
+} from "./site-helpers";
 
 export async function getUserSites(): Promise<ActionResult<Site[]>> {
   const session = await auth.api.getSession({
@@ -66,10 +77,9 @@ export async function createSite(url: string): Promise<ActionResult<Site>> {
   return { success: true, data: site };
 }
 
-const siteIdSchema = z.string().uuid();
-
 export async function getSiteStats(
-  siteId: string
+  siteId: string,
+  options: DashboardOptions = {}
 ): Promise<ActionResult<SiteStats>> {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -91,36 +101,29 @@ export async function getSiteStats(
     return SignalError.Site.NotFound();
   }
 
+  const rangeKey = options.range ?? DateRangeKey.Month;
+  const grain = options.grain ?? Grain.Day;
+  const { from, to } = computeRange(rangeKey);
+
   try {
-    const [totals, pageviews, topPages, topReferrers] = await Promise.all([
-      queryPipe<{ pageviews: number; visitors: number }>("site_totals", {
-        site_id: validatedSiteId,
-      }),
-      queryPipe<{ date: string; pageviews: number; visitors: number }>(
-        "site_pageviews_trend",
-        {
-          site_id: validatedSiteId,
-          days: 30,
-        }
-      ),
-      queryPipe<{ path: string; pageviews: number }>("site_top_pages", {
-        site_id: validatedSiteId,
-        limit: 10,
-      }),
-      queryPipe<{ referrer: string; pageviews: number }>("site_top_referrers", {
-        site_id: validatedSiteId,
-        limit: 10,
-      }),
-    ]);
+    const rows = await queryPipe<DashboardRow>("site_dashboard", {
+      site_id: validatedSiteId,
+      from,
+      to,
+      grain,
+      limit: 10,
+    });
+
+    const aggregated = reduceDashboardRows(rows);
 
     return {
       success: true,
       data: {
-        totalPageviews: totals[0]?.pageviews ?? 0,
-        totalVisitors: totals[0]?.visitors ?? 0,
-        pageviews: pageviews.reverse(),
-        topPages,
-        topReferrers,
+        totalPageviews: aggregated.totalPageviews,
+        totalVisitors: aggregated.totalVisitors,
+        pageviews: aggregated.trend,
+        topPages: aggregated.topPages,
+        topReferrers: aggregated.topReferrers,
       },
     };
   } catch (error) {

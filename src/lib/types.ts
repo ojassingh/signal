@@ -1,5 +1,21 @@
 import type { sites } from "@/db/schema";
 
+export const DateRangeKey = {
+  Week: "7d",
+  Month: "30d",
+  NinetyDays: "90d",
+} as const;
+
+export type DateRangeKey = (typeof DateRangeKey)[keyof typeof DateRangeKey];
+
+export const Grain = {
+  Day: "day",
+  Week: "week",
+  Month: "month",
+} as const;
+
+export type Grain = (typeof Grain)[keyof typeof Grain];
+
 export type ActionSuccess<T> = {
   success: true;
   data: T;
@@ -29,6 +45,25 @@ export type TopPage = {
 export type TopReferrer = {
   referrer: string;
   pageviews: number;
+};
+
+export type DashboardOptions = {
+  range?: DateRangeKey;
+  grain?: Grain;
+};
+
+export type DashboardRow =
+  | { section: "totals"; pageviews: number; visitors: number }
+  | { section: "trend"; bucket: string; pageviews: number; visitors: number }
+  | { section: "top_pages"; path: string; pageviews: number }
+  | { section: "top_referrers"; referrer: string; pageviews: number };
+
+export type DashboardAggregation = {
+  totalPageviews: number;
+  totalVisitors: number;
+  trend: { date: string; pageviews: number; visitors: number }[];
+  topPages: { path: string; pageviews: number }[];
+  topReferrers: { referrer: string; pageviews: number }[];
 };
 
 export type TopCountry = {
