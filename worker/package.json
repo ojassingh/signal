@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "bunx wrangler dev",
     "deploy": "bunx wrangler deploy",
+    "build": "bunx wrangler build",
     "typecheck": "bunx tsc --noEmit"
   },
   "dependencies": {

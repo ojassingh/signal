@@ -61,7 +61,6 @@ app.post("/ingest", async (c) => {
         {
           source: "ARCJET",
           reason: decision.reason.type,
-          limit: 5,
         },
         429
       );
