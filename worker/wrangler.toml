@@ -1,0 +1,8 @@
+name = "signal-ingest"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+TINYBIRD_API_URL = "https://api.us-east.tinybird.co"
+

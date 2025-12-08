@@ -1,6 +1,7 @@
 (() => {
   const script = document.currentScript;
   const websiteId = script.getAttribute("data-website-id");
+  const endpoint = script.getAttribute("data-endpoint") || "";
 
   function getVisitorId() {
     let visitorId = localStorage.getItem("_signal_vid");
@@ -12,7 +13,8 @@
   }
 
   function track(event) {
-    fetch("/api/ingest", {
+    const url = endpoint ? `${endpoint}/ingest` : "/api/ingest";
+    fetch(url, {
       method: "POST",
       keepalive: true,
       headers: { "Content-Type": "application/json" },
