@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 
 type Env = {
+  ENVIRONMENT?: string;
   TINYBIRD_TOKEN: string;
   TINYBIRD_API_URL: string;
   ARCJET_KEY?: string;
@@ -16,6 +17,7 @@ type IngestPayload = {
   referrer?: string;
   event: string;
   path: string;
+  user_agent: string;
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -30,34 +32,39 @@ app.use(
 );
 
 app.post("/ingest", async (c) => {
-  if (c.env.ARCJET_KEY) {
+  if (c.env.ARCJET_KEY && c.env.ENVIRONMENT && c.env.ENVIRONMENT !== "LOCAL") {
     const aj = arcjet({
       key: c.env.ARCJET_KEY,
       characteristics: ["ip.src"],
       rules: [
-        fixedWindow({
-          mode: "LIVE",
-          window: "1m",
-          max: 100,
-        }),
+        fixedWindow({ mode: "LIVE", window: "1m", max: 100 }),
         detectBot({
           mode: "LIVE",
-          allow: [],
+          allow: [
+            "CATEGORY:SEARCH_ENGINE",
+            "CATEGORY:PREVIEW",
+            "CATEGORY:MONITOR",
+            "CATEGORY:AI",
+          ],
         }),
       ],
     });
 
-    const headers: Record<string, string> = {};
-    c.req.raw.headers.forEach((value, key) => {
-      headers[key] = value;
-    });
     const decision = await aj.protect({
-      headers,
       method: c.req.method,
       url: c.req.url,
+      headers: c.req.header(),
     });
     if (decision.isDenied()) {
-      return c.text("Too many requests", 429);
+      console.log("[ARCJET] Decision", decision.reason.type);
+      return c.json(
+        {
+          source: "ARCJET",
+          reason: decision.reason.type,
+          limit: 5,
+        },
+        429
+      );
     }
   }
 
@@ -79,6 +86,7 @@ app.post("/ingest", async (c) => {
     path: body.path,
     country: cf?.country || "",
     city: cf?.city || "",
+    user_agent: body.user_agent || "",
   };
 
   const tinybirdUrl = `${c.env.TINYBIRD_API_URL}/v0/events?name=events`;
@@ -92,6 +100,19 @@ app.post("/ingest", async (c) => {
       },
       body: JSON.stringify(tinybirdPayload),
     })
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          console.error(
+            `[Ingest Error] Status: ${res.status} | Body: ${text.slice(0, 200)}`
+          );
+        }
+      })
+      .catch((err) => {
+        console.error(
+          `[Network Error] Failed to reach Tinybird: ${err.message}`
+        );
+      })
   );
 
   return c.text("ok");

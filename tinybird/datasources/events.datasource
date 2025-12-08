@@ -7,8 +7,22 @@ SCHEMA >
     `event` String `json:$.event`,
     `path` String `json:$.path`,
     `country` String `json:$.country`,
-    `city` String `json:$.city`
+    `city` String `json:$.city`,
+    `user_agent` String `json:$.user_agent`
 
 ENGINE "MergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
 ENGINE_SORTING_KEY "timestamp, siteId"
+
+FORWARD_QUERY >
+    SELECT 
+        timestamp, 
+        visitor_id, 
+        siteId, 
+        page_url, 
+        referrer, 
+        event, 
+        path, 
+        country, 
+        city, 
+        '' AS user_agent

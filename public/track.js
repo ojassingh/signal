@@ -26,6 +26,7 @@
         path: window.location.pathname,
         page_url: window.location.href,
         referrer: document.referrer || "",
+        user_agent: navigator.userAgent || "",
       }),
     });
   }
