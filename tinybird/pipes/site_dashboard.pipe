@@ -1,0 +1,71 @@
+DESCRIPTION >
+    Aggregated dashboard data (totals, trend, top pages, top referrers) for a site with optional date range and grain.
+
+TOKEN "read_token" READ
+
+NODE endpoint
+SQL >
+    %
+    WITH
+        {{ DateTime(from, now() - INTERVAL 30 DAY) }} AS from_ts,
+        {{ DateTime(to, now()) }} AS to_ts,
+        lower({{ String(grain, 'day') }}) AS g,
+        multiIf(
+            g = 'week', toStartOfWeek(timestamp),
+            g = 'month', toStartOfMonth(timestamp),
+            toStartOfDay(timestamp)
+        ) AS bucket
+    SELECT
+        'totals' AS section,
+        count() AS pageviews,
+        uniq(visitor_id) AS visitors
+    FROM events
+    WHERE siteId = {{ String(site_id, required=True) }}
+      AND timestamp >= from_ts
+      AND timestamp < to_ts
+
+    UNION ALL
+
+    SELECT
+        'trend' AS section,
+        bucket,
+        count() AS pageviews,
+        uniq(visitor_id) AS visitors
+    FROM events
+    WHERE siteId = {{ String(site_id, required=True) }}
+      AND timestamp >= from_ts
+      AND timestamp < to_ts
+    GROUP BY bucket
+    ORDER BY bucket ASC
+
+    UNION ALL
+
+    SELECT
+        'top_pages' AS section,
+        path,
+        count() AS pageviews
+    FROM events
+    WHERE siteId = {{ String(site_id, required=True) }}
+      AND timestamp >= from_ts
+      AND timestamp < to_ts
+    GROUP BY path
+    ORDER BY pageviews DESC
+    LIMIT {{ Int32(limit, 10) }}
+
+    UNION ALL
+
+    SELECT
+        'top_referrers' AS section,
+        referrer,
+        count() AS pageviews
+    FROM events
+    WHERE siteId = {{ String(site_id, required=True) }}
+      AND referrer != ''
+      AND timestamp >= from_ts
+      AND timestamp < to_ts
+    GROUP BY referrer
+    ORDER BY pageviews DESC
+    LIMIT {{ Int32(limit, 10) }}
+
+TYPE endpoint
+
