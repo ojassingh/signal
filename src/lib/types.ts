@@ -16,17 +16,14 @@ export const Grain = {
 
 export type Grain = (typeof Grain)[keyof typeof Grain];
 
-export type ActionSuccess<T> = {
-  success: true;
-  data: T;
+export type ActionErrorPayload = {
+  code: string;
+  message: string;
 };
 
-export type ActionError = {
-  success: false;
-  error: string;
-};
-
-export type ActionResult<T> = ActionSuccess<T> | ActionError;
+export type ActionResponse<T> =
+  | { success: true; data: T }
+  | { success: false; error: ActionErrorPayload };
 
 export type Site = typeof sites.$inferSelect;
 export type NewSite = typeof sites.$inferInsert;
