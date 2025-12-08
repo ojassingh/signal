@@ -1,5 +1,3 @@
-"use server";
-
 import { first, groupBy, map } from "lodash";
 import { z } from "zod";
 import {
@@ -8,7 +6,7 @@ import {
   DateRangeKey,
 } from "@/lib/types";
 
-export const siteIdSchema = z.string().uuid();
+export const siteIdSchema = z.uuid();
 
 function rangeDays(range: DateRangeKey): number {
   const daysMap: Record<DateRangeKey, number> = {
