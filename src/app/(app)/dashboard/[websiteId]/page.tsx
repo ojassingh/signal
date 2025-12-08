@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Eye, Users } from "lucide-react";
 import Link from "next/link";
-import { use, useState } from "react";
+import { use } from "react";
 import { Area, AreaChart, Bar, BarChart, XAxis, YAxis } from "recharts";
 import { getSiteStats } from "@/actions/sites";
 import {
@@ -20,7 +20,6 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Spinner } from "@/components/ui/spinner";
-import { DateRangeKey, Grain } from "@/lib/types";
 
 const chartConfig = {
   pageviews: {
@@ -40,14 +39,9 @@ export default function WebsitePage({
 }) {
   const { websiteId } = use(params);
 
-  const [range, setRange] = useState<DateRangeKey>(DateRangeKey.Month);
-  const [grain, setGrain] = useState<Grain>(Grain.Day);
-
   const { data: result, isLoading } = useQuery({
-    queryKey: ["site-stats", websiteId, range, grain],
-    queryFn: () => getSiteStats(websiteId, { range, grain }),
-    staleTime: 30_000,
-    refetchOnWindowFocus: false,
+    queryKey: ["site-stats", websiteId],
+    queryFn: () => getSiteStats(websiteId),
   });
 
   if (isLoading) {
@@ -62,7 +56,7 @@ export default function WebsitePage({
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
         <p className="text-muted-foreground">
-          {result?.error ?? "Failed to load stats"}
+          {result?.error.message ?? "Failed to load stats"}
         </p>
         <Link className="text-primary hover:underline" href="/dashboard">
           Back to dashboard
@@ -75,7 +69,7 @@ export default function WebsitePage({
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex items-center gap-4">
         <Link
           className="rounded-lg p-2 transition-colors hover:bg-accent"
           href="/dashboard"
@@ -83,26 +77,6 @@ export default function WebsitePage({
           <ArrowLeft className="size-5" />
         </Link>
         <h1 className="font-semibold text-2xl">Analytics</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            className="rounded-md border bg-background px-3 py-2 text-sm"
-            onChange={(e) => setRange(e.target.value as typeof range)}
-            value={range}
-          >
-            <option value={DateRangeKey.Week}>Last 7 days</option>
-            <option value={DateRangeKey.Month}>Last 30 days</option>
-            <option value={DateRangeKey.NinetyDays}>Last 90 days</option>
-          </select>
-          <select
-            className="rounded-md border bg-background px-3 py-2 text-sm"
-            onChange={(e) => setGrain(e.target.value as typeof grain)}
-            value={grain}
-          >
-            <option value={Grain.Day}>Daily</option>
-            <option value={Grain.Week}>Weekly</option>
-            <option value={Grain.Month}>Monthly</option>
-          </select>
-        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

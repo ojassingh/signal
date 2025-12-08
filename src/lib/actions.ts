@@ -1,5 +1,4 @@
-"use server";
-
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { SignalError } from "@/lib/errors";
 import type { ActionErrorPayload, ActionResponse } from "@/lib/types";
@@ -15,7 +14,10 @@ export function authAction<Args extends unknown[], Return>(
   fn: (ctx: { session: Session }, ...args: Args) => Promise<Return>
 ) {
   return async (...args: Args): Promise<ActionResponse<Return>> => {
-    const session = await auth.api.getSession();
+    const sessionHeaders = await headers();
+    const session = await auth.api.getSession({
+      headers: sessionHeaders,
+    });
 
     if (!session) {
       const error = SignalError.Auth.Unauthorized();
