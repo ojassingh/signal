@@ -1,13 +1,13 @@
 SCHEMA >
-    `timestamp` DateTime,
-    `visitor_id` String,
-    `siteId` String,        
-    `page_url` String,
-    `referrer` String,
-    `event` String,
-    `path` String,           
-    `country` String,
-    `city` String
+    `timestamp` DateTime `json:$.timestamp`,
+    `visitor_id` String `json:$.visitor_id`,
+    `siteId` String `json:$.siteId`,
+    `page_url` String `json:$.page_url`,
+    `referrer` String `json:$.referrer`,
+    `event` String `json:$.event`,
+    `path` String `json:$.path`,
+    `country` String `json:$.country`,
+    `city` String `json:$.city`
 
 ENGINE "MergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"

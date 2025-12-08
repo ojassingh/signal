@@ -10,7 +10,7 @@ type Env = {
 
 type IngestPayload = {
   timestamp: string;
-  visitor_id: string;
+  visitor_id?: string;
   siteId: string;
   page_url: string;
   referrer?: string;
@@ -64,9 +64,14 @@ app.post("/ingest", async (c) => {
   const body = await c.req.json<IngestPayload>();
   const cf = c.req.raw.cf as { country?: string; city?: string } | undefined;
 
+  const cleanDate = (body.timestamp || new Date().toISOString())
+    .replace("T", " ")
+    .replace("Z", "")
+    .split(".")[0];
+
   const tinybirdPayload = {
-    timestamp: body.timestamp,
-    visitor_id: body.visitor_id,
+    timestamp: cleanDate,
+    visitor_id: body.visitor_id || "",
     siteId: body.siteId,
     page_url: body.page_url,
     referrer: body.referrer || "",
@@ -76,12 +81,17 @@ app.post("/ingest", async (c) => {
     city: cf?.city || "",
   };
 
-  await fetch(
-    `${c.env.TINYBIRD_API_URL}/v0/events?name=events&token=${c.env.TINYBIRD_TOKEN}`,
-    {
+  const tinybirdUrl = `${c.env.TINYBIRD_API_URL}/v0/events?name=events`;
+
+  c.executionCtx.waitUntil(
+    fetch(tinybirdUrl, {
       method: "POST",
+      headers: {
+        Authorization: `Bearer ${c.env.TINYBIRD_TOKEN}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(tinybirdPayload),
-    }
+    })
   );
 
   return c.text("ok");
