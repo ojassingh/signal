@@ -329,7 +329,6 @@ inset-shadow-primary inset-shadow-sm rounded-full border bg-primary...
 DATABASE_URL=postgresql://...
 
 # Better Auth
-BETTER_AUTH_URL=http://localhost:3000
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 
 # OAuth Providers
