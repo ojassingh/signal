@@ -25,7 +25,7 @@ export function AddSiteDialog() {
     mutationFn: createSite,
     onSuccess: (result) => {
       if (!result.success) {
-        toast.error(result.error);
+        toast.error(result.error.message);
         return;
       }
       queryClient.invalidateQueries({ queryKey: ["sites"] });
