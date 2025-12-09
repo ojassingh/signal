@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Eye, Users } from "lucide-react";
+import { defaultTo, isEmpty } from "lodash";
+import { Eye, Users } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
 import { Area, AreaChart, Bar, BarChart, XAxis, YAxis } from "recharts";
@@ -66,17 +67,41 @@ export default function WebsitePage({
   }
 
   const stats = result.data;
+  const now = new Date();
+  const fallbackTrend = [
+    {
+      date: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
+      pageviews: 0,
+      visitors: 0,
+    },
+    {
+      date: now.toISOString(),
+      pageviews: 0,
+      visitors: 0,
+    },
+  ];
+  const totalPageviews = defaultTo(stats.totalPageviews, 0);
+  const totalVisitors = defaultTo(stats.totalVisitors, 0);
+  const pageviewsTrend = isEmpty(stats.pageviews)
+    ? fallbackTrend
+    : stats.pageviews.map((item) => ({
+        ...item,
+        pageviews: defaultTo(item.pageviews, 0),
+        visitors: defaultTo(item.visitors, 0),
+      }));
+  const topPages = defaultTo(stats.topPages, []).map((item) => ({
+    ...item,
+    pageviews: defaultTo(item.pageviews, 0),
+  }));
+  const topReferrers = defaultTo(stats.topReferrers, []).map((item) => ({
+    ...item,
+    pageviews: defaultTo(item.pageviews, 0),
+  }));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <Link
-          className="rounded-lg p-2 transition-colors hover:bg-accent"
-          href="/dashboard"
-        >
-          <ArrowLeft className="size-5" />
-        </Link>
-        <h1 className="font-semibold text-2xl">Analytics</h1>
+        <h1 className="text-2xl">Analytics</h1>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -89,7 +114,7 @@ export default function WebsitePage({
           </CardHeader>
           <CardContent>
             <div className="font-bold text-3xl">
-              {stats.totalPageviews.toLocaleString()}
+              {totalPageviews.toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -103,7 +128,7 @@ export default function WebsitePage({
           </CardHeader>
           <CardContent>
             <div className="font-bold text-3xl">
-              {stats.totalVisitors.toLocaleString()}
+              {totalVisitors.toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -116,7 +141,7 @@ export default function WebsitePage({
         </CardHeader>
         <CardContent>
           <ChartContainer className="h-[300px] w-full" config={chartConfig}>
-            <AreaChart data={stats.pageviews}>
+            <AreaChart data={pageviewsTrend}>
               <XAxis
                 axisLine={false}
                 dataKey="date"
@@ -156,9 +181,9 @@ export default function WebsitePage({
             <CardDescription>Most visited pages</CardDescription>
           </CardHeader>
           <CardContent>
-            {stats.topPages.length > 0 ? (
+            {topPages.length > 0 ? (
               <ChartContainer className="h-[300px] w-full" config={chartConfig}>
-                <BarChart data={stats.topPages} layout="vertical">
+                <BarChart data={topPages} layout="vertical">
                   <XAxis axisLine={false} tickLine={false} type="number" />
                   <YAxis
                     axisLine={false}
@@ -194,9 +219,9 @@ export default function WebsitePage({
             <CardDescription>Where your traffic comes from</CardDescription>
           </CardHeader>
           <CardContent>
-            {stats.topReferrers.length > 0 ? (
+            {topReferrers.length > 0 ? (
               <ChartContainer className="h-[300px] w-full" config={chartConfig}>
-                <BarChart data={stats.topReferrers} layout="vertical">
+                <BarChart data={topReferrers} layout="vertical">
                   <XAxis axisLine={false} tickLine={false} type="number" />
                   <YAxis
                     axisLine={false}

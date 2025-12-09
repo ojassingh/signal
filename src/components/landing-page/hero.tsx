@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 
 export function Hero() {
   return (
-    <div className="relative grid h-screen grid-rows-12 place-content-center bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--color-border)_75%,black)_1px,transparent_1px)] bg-black bg-size-[20px_20px]">
+    <div className="relative grid h-screen grid-rows-12 place-content-center bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--color-white)_30%,black)_1px,transparent_1px)] bg-black bg-size-[20px_20px]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_50%,var(--color-black)_100%)]" />
       <div className="row-start-4 mx-auto text-center">
         <h1 className="mx-auto mt-4 max-w-2xl text-pretty text-5xl tracking-tight">
