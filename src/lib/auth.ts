@@ -35,4 +35,5 @@ export const auth = betterAuth({
     },
   },
   plugins: [nextCookies()],
+  trustedOrigins: [process.env.NEXT_PUBLIC_BASE_URL as string],
 });
