@@ -3,69 +3,76 @@ DESCRIPTION >
 
 TOKEN "read_token" READ
 
+NODE filtered_events
+SQL >
+    %
+    SELECT
+        timestamp,
+        visitor_id,
+        page_url,
+        path,
+        referrer,
+        country,
+        user_agent
+    FROM events
+    WHERE siteId = {{ String(site_id, required=True) }}
+      AND timestamp >= {% if defined(start) %} parseDateTimeBestEffort({{ String(start) }}) {% else %} now() - INTERVAL 30 DAY {% end %}
+      AND timestamp <  {% if defined(end)   %} parseDateTimeBestEffort({{ String(end)   }}) {% else %} now() {% end %}
+
 NODE endpoint
 SQL >
     %
-    WITH
-        {{ DateTime(from, now() - INTERVAL 30 DAY) }} AS from_ts,
-        {{ DateTime(to, now()) }} AS to_ts,
-        lower({{ String(grain, 'day') }}) AS g,
-        multiIf(
-            g = 'week', toStartOfWeek(timestamp),
-            g = 'month', toStartOfMonth(timestamp),
-            toStartOfDay(timestamp)
-        ) AS bucket
     SELECT
         'totals' AS section,
+        '' AS x_axis,
         count() AS pageviews,
-        uniq(visitor_id) AS visitors
-    FROM events
-    WHERE siteId = {{ String(site_id, required=True) }}
-      AND timestamp >= from_ts
-      AND timestamp < to_ts
+        uniq(visitor_id) AS visitors,
+        '' AS breakdown
+    FROM filtered_events
 
     UNION ALL
 
     SELECT
         'trend' AS section,
-        bucket,
+        toString(
+            multiIf(
+                {{ String(grain, 'day') }} = 'week', toStartOfWeek(timestamp),
+                {{ String(grain, 'day') }} = 'month', toStartOfMonth(timestamp),
+                toStartOfDay(timestamp)
+            )
+        ) AS x_axis,
         count() AS pageviews,
-        uniq(visitor_id) AS visitors
-    FROM events
-    WHERE siteId = {{ String(site_id, required=True) }}
-      AND timestamp >= from_ts
-      AND timestamp < to_ts
-    GROUP BY bucket
-    ORDER BY bucket ASC
+        uniq(visitor_id) AS visitors,
+        '' AS breakdown
+    FROM filtered_events
+    GROUP BY x_axis
+    ORDER BY x_axis ASC
 
     UNION ALL
 
     SELECT
         'top_pages' AS section,
-        path,
-        count() AS pageviews
-    FROM events
-    WHERE siteId = {{ String(site_id, required=True) }}
-      AND timestamp >= from_ts
-      AND timestamp < to_ts
+        '' AS x_axis,
+        count() AS pageviews,
+        uniq(visitor_id) AS visitors,
+        path AS breakdown
+    FROM filtered_events
     GROUP BY path
     ORDER BY pageviews DESC
-    LIMIT {{ Int32(limit, 10) }}
+    LIMIT 10
 
     UNION ALL
 
     SELECT
         'top_referrers' AS section,
-        referrer,
-        count() AS pageviews
-    FROM events
-    WHERE siteId = {{ String(site_id, required=True) }}
-      AND referrer != ''
-      AND timestamp >= from_ts
-      AND timestamp < to_ts
+        '' AS x_axis,
+        count() AS pageviews,
+        uniq(visitor_id) AS visitors,
+        referrer AS breakdown
+    FROM filtered_events
+    WHERE referrer != ''
     GROUP BY referrer
     ORDER BY pageviews DESC
-    LIMIT {{ Int32(limit, 10) }}
+    LIMIT 10
 
 TYPE endpoint
-
