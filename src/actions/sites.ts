@@ -1,32 +1,47 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
-import { sites } from "@/db/schema";
+import { session as sessionTable, sites } from "@/db/schema";
 import { authAction } from "@/lib/actions";
 import { SignalError } from "@/lib/errors";
 import { queryPipe } from "@/lib/tinybird";
-import type {
-  DashboardOptions,
-  DashboardRow,
-  Site,
-  SiteStats,
-} from "@/lib/types";
+import type { DashboardOptions, DashboardRow, Site, User } from "@/lib/types";
 import { DateRangeKey, Grain } from "@/lib/types";
-import {
-  computeRange,
-  reduceDashboardRows,
-  siteIdSchema,
-} from "./site-helpers";
+import { computeRange, reduceDashboardRows } from "./site-helpers";
 
-export const getUserSites = authAction(
-  async ({ session }): Promise<{ sites: Site[] }> => {
+export const getSidebarData = authAction(
+  async ({
+    session,
+  }): Promise<{
+    user: Partial<User>;
+    sites: Site[];
+    activeDomain: string | null;
+  }> => {
     const userSites = await db
       .select()
       .from(sites)
       .where(eq(sites.ownerId, session.user.id));
 
-    return { sites: userSites };
+    const fallbackDomain = userSites[0]?.domain ?? null;
+    const activeDomain = session.session.activeDomain ?? fallbackDomain;
+
+    if (activeDomain && activeDomain !== session.session.activeDomain) {
+      await db
+        .update(sessionTable)
+        .set({ activeDomain })
+        .where(eq(sessionTable.id, session.session.id));
+    }
+
+    return {
+      user: {
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image ?? null,
+      },
+      sites: userSites,
+      activeDomain,
+    };
   }
 );
 
@@ -62,25 +77,23 @@ export const createSite = authAction(
   }
 );
 
-export const getSiteStats = authAction(
-  async (
-    { session },
-    siteId: string,
-    options: DashboardOptions = {}
-  ): Promise<SiteStats> => {
-    const validatedSiteId = siteIdSchema.safeParse(siteId);
+export const getActiveSiteStats = authAction(
+  async ({ session }, options: DashboardOptions = {}) => {
+    const activeDomain = session.session.activeDomain;
 
-    if (!validatedSiteId.success) {
-      throw SignalError.Site.NotFound();
+    if (!activeDomain) {
+      throw SignalError.Site.NoActiveDomain();
     }
 
     const site = await db
       .select()
       .from(sites)
-      .where(eq(sites.id, validatedSiteId.data))
+      .where(
+        and(eq(sites.domain, activeDomain), eq(sites.ownerId, session.user.id))
+      )
       .limit(1);
 
-    if (site.length === 0 || site[0].ownerId !== session.user.id) {
+    if (site.length === 0) {
       throw SignalError.Site.NotFound();
     }
 
@@ -89,7 +102,7 @@ export const getSiteStats = authAction(
     const { from, to } = computeRange(rangeKey);
 
     const rows = await queryPipe<DashboardRow>("site_dashboard", {
-      site_id: validatedSiteId.data,
+      site_id: site[0].id,
       from,
       to,
       grain,
@@ -101,11 +114,42 @@ export const getSiteStats = authAction(
     const aggregated = reduceDashboardRows(rows);
 
     return {
-      totalPageviews: aggregated.totalPageviews,
-      totalVisitors: aggregated.totalVisitors,
-      pageviews: aggregated.trend,
-      topPages: aggregated.topPages,
-      topReferrers: aggregated.topReferrers,
+      site: {
+        id: site[0].id,
+        name: site[0].name,
+        domain: site[0].domain,
+      },
+      stats: {
+        totalPageviews: aggregated.totalPageviews,
+        totalVisitors: aggregated.totalVisitors,
+        pageviews: aggregated.trend,
+        topPages: aggregated.topPages,
+        topReferrers: aggregated.topReferrers,
+      },
+    };
+  }
+);
+
+export const setActiveDomain = authAction(
+  async ({ session }, domain: string) => {
+    const site = await db
+      .select()
+      .from(sites)
+      .where(and(eq(sites.domain, domain), eq(sites.ownerId, session.user.id)))
+      .limit(1);
+
+    if (site.length === 0) {
+      throw SignalError.Site.NotFound();
+    }
+
+    await db
+      .update(sessionTable)
+      .set({ activeDomain: domain })
+      .where(eq(sessionTable.id, session.session.id));
+
+    return {
+      activeDomain: domain,
+      siteId: site[0].id,
     };
   }
 );
