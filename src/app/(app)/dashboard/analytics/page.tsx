@@ -4,9 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { defaultTo, isEmpty } from "lodash";
 import { Eye, Users } from "lucide-react";
 import Link from "next/link";
-import { use } from "react";
 import { Area, AreaChart, Bar, BarChart, XAxis, YAxis } from "recharts";
-import { getSiteStats } from "@/actions/sites";
+import { getActiveSiteStats } from "@/actions/sites";
 import {
   Card,
   CardContent,
@@ -21,6 +20,8 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Spinner } from "@/components/ui/spinner";
+import type { ActionResponse, SiteStats } from "@/lib/types";
+import { UserGlobe } from "./components/userse-globe";
 
 const chartConfig = {
   pageviews: {
@@ -33,21 +34,20 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function WebsitePage({
-  params,
-}: {
-  params: Promise<{ websiteId: string }>;
-}) {
-  const { websiteId } = use(params);
+type ActiveStatsResponse = ActionResponse<{
+  site: { id: string; name: string; domain: string };
+  stats: SiteStats;
+}>;
 
-  const { data: result, isLoading } = useQuery({
-    queryKey: ["site-stats", websiteId],
-    queryFn: () => getSiteStats(websiteId),
+export default function AnalyticsPage() {
+  const { data: result, isLoading } = useQuery<ActiveStatsResponse>({
+    queryKey: ["active-site-stats"],
+    queryFn: () => getActiveSiteStats(),
   });
 
   if (isLoading) {
     return (
-      <div className="grid h-screen w-full place-content-center">
+      <div className="grid h-[calc(100vh-7rem)] w-full place-content-center">
         <Spinner className="size-6 text-primary" />
       </div>
     );
@@ -57,7 +57,7 @@ export default function WebsitePage({
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
         <p className="text-muted-foreground">
-          {result?.error.message ?? "Failed to load stats"}
+          {result?.error.message ?? "Add a domain to view analytics"}
         </p>
         <Link className="text-primary hover:underline" href="/dashboard">
           Back to dashboard
@@ -66,7 +66,7 @@ export default function WebsitePage({
     );
   }
 
-  const stats = result.data;
+  const { site, stats } = result.data;
   const now = new Date();
   const fallbackTrend = [
     {
@@ -84,52 +84,51 @@ export default function WebsitePage({
   const totalVisitors = defaultTo(stats.totalVisitors, 0);
   const pageviewsTrend = isEmpty(stats.pageviews)
     ? fallbackTrend
-    : stats.pageviews.map((item) => ({
+    : stats.pageviews.map((item: SiteStats["pageviews"][number]) => ({
         ...item,
         pageviews: defaultTo(item.pageviews, 0),
         visitors: defaultTo(item.visitors, 0),
       }));
-  const topPages = defaultTo(stats.topPages, []).map((item) => ({
-    ...item,
-    pageviews: defaultTo(item.pageviews, 0),
-  }));
-  const topReferrers = defaultTo(stats.topReferrers, []).map((item) => ({
-    ...item,
-    pageviews: defaultTo(item.pageviews, 0),
-  }));
+  const topPages = defaultTo(stats.topPages, []).map(
+    (item: SiteStats["topPages"][number]) => ({
+      ...item,
+      pageviews: defaultTo(item.pageviews, 0),
+    })
+  );
+  const topReferrers = defaultTo(stats.topReferrers, []).map(
+    (item: SiteStats["topReferrers"][number]) => ({
+      ...item,
+      pageviews: defaultTo(item.pageviews, 0),
+    })
+  );
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <h1 className="text-2xl">Analytics</h1>
+        <div>
+          <h1 className="text-2xl">Analytics</h1>
+          <p className="text-muted-foreground text-sm">{site.domain}</p>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="font-medium text-sm">
-              Total Pageviews
-            </CardTitle>
+            <CardTitle>Total Pageviews</CardTitle>
             <Eye className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-3xl">
-              {totalPageviews.toLocaleString()}
-            </div>
+            <div className="text-3xl">{totalPageviews.toLocaleString()}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="font-medium text-sm">
-              Unique Visitors
-            </CardTitle>
+            <CardTitle>Unique Visitors</CardTitle>
             <Users className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-3xl">
-              {totalVisitors.toLocaleString()}
-            </div>
+            <div className="text-3xl">{totalVisitors.toLocaleString()}</div>
           </CardContent>
         </Card>
       </div>
@@ -254,6 +253,7 @@ export default function WebsitePage({
             )}
           </CardContent>
         </Card>
+        <UserGlobe />
       </div>
     </div>
   );
