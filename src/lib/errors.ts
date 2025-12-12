@@ -48,6 +48,12 @@ export class SignalError extends Error {
         message: "Site not found",
         isPublic: true,
       }),
+    NoActiveDomain: (): SignalError =>
+      new SignalError({
+        code: "SITE_NO_ACTIVE_DOMAIN",
+        message: "No active domain found for this user",
+        isPublic: true,
+      }),
   };
 
   static Analytics = {

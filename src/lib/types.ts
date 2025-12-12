@@ -1,4 +1,6 @@
-import type { sites } from "@/db/schema";
+import type { sites, user } from "@/db/schema";
+
+export type User = typeof user.$inferSelect;
 
 export const DateRangeKey = {
   Week: "7d",
