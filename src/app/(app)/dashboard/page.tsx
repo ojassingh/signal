@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { AssistantChat } from "./components/assistant-chat";
 
 export default function Page() {
-  redirect("/dashboard/analytics");
+  return <AssistantChat />;
 }
