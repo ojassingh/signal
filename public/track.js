@@ -1,7 +1,7 @@
 (() => {
   const script = document.currentScript;
   const websiteId = script.getAttribute("data-website-id");
-  const endpoint = process.env.NEXT_PUBLIC_SIGNAL_ENDPOINT;
+  const endpoint = "https://signal-ingest.ojas-singh02.workers.dev/ingest";
 
   function getVisitorId() {
     let visitorId = localStorage.getItem("_signal_vid");
@@ -13,8 +13,7 @@
   }
 
   function track(event) {
-    const url = endpoint ? `${endpoint}/ingest` : "/api/ingest";
-    fetch(url, {
+    fetch(endpoint, {
       method: "POST",
       keepalive: true,
       headers: { "Content-Type": "application/json" },
