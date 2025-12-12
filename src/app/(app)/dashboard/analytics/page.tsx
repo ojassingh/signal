@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/chart";
 import { Spinner } from "@/components/ui/spinner";
 import type { ActionResponse, SiteStats } from "@/lib/types";
-import { UserGlobe } from "./components/userse-globe";
 
 const chartConfig = {
   pageviews: {
@@ -253,7 +252,7 @@ export default function AnalyticsPage() {
             )}
           </CardContent>
         </Card>
-        <UserGlobe />
+        {/* <UserGlobe /> */}
       </div>
     </div>
   );
