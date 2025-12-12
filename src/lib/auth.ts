@@ -11,6 +11,18 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+    },
+    additionalFields: {
+      activeDomain: {
+        type: "string",
+        required: false,
+      },
+    },
+  },
   databaseHooks: {
     user: {
       create: {
