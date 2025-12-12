@@ -1,7 +1,7 @@
 (() => {
   const script = document.currentScript;
   const websiteId = script.getAttribute("data-website-id");
-  const endpoint = script.getAttribute("data-endpoint") || "";
+  const endpoint = process.env.NEXT_PUBLIC_SIGNAL_ENDPOINT;
 
   function getVisitorId() {
     let visitorId = localStorage.getItem("_signal_vid");
