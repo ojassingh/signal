@@ -17,6 +17,8 @@ import {
 import {
   type ChartConfig,
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
@@ -32,6 +34,8 @@ const chartConfig = {
     color: "var(--chart-2)",
   },
 } satisfies ChartConfig;
+
+const BAR_THICKNESS = 12;
 
 type ActiveStatsResponse = ActionResponse<{
   site: { id: string; name: string; domain: string };
@@ -145,6 +149,8 @@ export default function AnalyticsPage() {
               <XAxis
                 axisLine={false}
                 dataKey="date"
+                interval="preserveStartEnd"
+                minTickGap={24}
                 tickFormatter={(value) =>
                   new Date(value).toLocaleDateString("en-US", {
                     month: "short",
@@ -152,9 +158,21 @@ export default function AnalyticsPage() {
                   })
                 }
                 tickLine={false}
+                tickMargin={8}
               />
               <YAxis axisLine={false} tickLine={false} />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(_, payload) =>
+                      new Date(payload?.[0]?.payload?.date).toLocaleDateString(
+                        "en-US",
+                        { month: "short", day: "numeric" }
+                      )
+                    }
+                  />
+                }
+              />
               <Area
                 dataKey="pageviews"
                 fill="var(--color-pageviews)"
@@ -169,6 +187,7 @@ export default function AnalyticsPage() {
                 stroke="var(--color-visitors)"
                 type="monotone"
               />
+              <ChartLegend content={<ChartLegendContent />} />
             </AreaChart>
           </ChartContainer>
         </CardContent>
@@ -183,7 +202,12 @@ export default function AnalyticsPage() {
           <CardContent>
             {topPages.length > 0 ? (
               <ChartContainer className="h-[300px] w-full" config={chartConfig}>
-                <BarChart data={topPages} layout="vertical">
+                <BarChart
+                  barCategoryGap={8}
+                  barSize={BAR_THICKNESS}
+                  data={topPages}
+                  layout="vertical"
+                >
                   <XAxis axisLine={false} tickLine={false} type="number" />
                   <YAxis
                     axisLine={false}
@@ -221,7 +245,12 @@ export default function AnalyticsPage() {
           <CardContent>
             {topReferrers.length > 0 ? (
               <ChartContainer className="h-[300px] w-full" config={chartConfig}>
-                <BarChart data={topReferrers} layout="vertical">
+                <BarChart
+                  barCategoryGap={8}
+                  barSize={BAR_THICKNESS}
+                  data={topReferrers}
+                  layout="vertical"
+                >
                   <XAxis axisLine={false} tickLine={false} type="number" />
                   <YAxis
                     axisLine={false}

@@ -60,6 +60,14 @@ export type DashboardOptions = {
   grain?: Grain;
 };
 
+export type TinybirdSiteDashboardRow = {
+  section: "totals" | "trend" | "top_pages" | "top_referrers";
+  x_axis: string;
+  pageviews: number;
+  visitors: number;
+  breakdown: string;
+};
+
 export type DashboardRow =
   | { section: "totals"; pageviews: number; visitors: number }
   | { section: "trend"; bucket: string; pageviews: number; visitors: number }

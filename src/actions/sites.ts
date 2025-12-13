@@ -9,8 +9,8 @@ import { queryPipe } from "@/lib/tinybird";
 import type {
   ChatThreadListItem,
   DashboardOptions,
-  DashboardRow,
   Site,
+  TinybirdSiteDashboardRow,
   User,
 } from "@/lib/types";
 import { DateRangeKey, Grain } from "@/lib/types";
@@ -139,10 +139,10 @@ export const getActiveSiteStats = authAction(
     const grain = options.grain ?? Grain.Day;
     const { from, to } = computeRange(rangeKey);
 
-    const rows = await queryPipe<DashboardRow>("site_dashboard", {
+    const rows = await queryPipe<TinybirdSiteDashboardRow>("site_dashboard", {
       site_id: site[0].id,
-      from,
-      to,
+      start: from,
+      end: to,
       grain,
       limit: 10,
     }).catch(() => {
