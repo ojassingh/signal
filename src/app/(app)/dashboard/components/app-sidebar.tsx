@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, MessageCircle, Sparkles } from "lucide-react";
+import { BarChart3, MessageCircle, PlusSquare, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type * as React from "react";
@@ -28,12 +28,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data, isLoading } = useQuery({
     queryKey: ["sidebar-data"],
     queryFn: getSidebarData,
+    staleTime: 5 * 60 * 1000,
   });
 
   const sidebarData = data?.success ? data.data : null;
   const sites = sidebarData?.sites ?? [];
   const user = sidebarData?.user;
   const activeDomain = sidebarData?.activeDomain ?? null;
+  const threads = sidebarData?.threads ?? [];
 
   let headerContent: React.ReactNode = (
     <Skeleton className="h-12 w-full rounded-lg" />
@@ -56,13 +58,32 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === "/dashboard"}>
-                  <Link href="/dashboard/">
-                    <MessageCircle />
+                <SidebarMenuButton
+                  asChild
+                  isActive={
+                    pathname === "/dashboard/chat" ||
+                    pathname.startsWith("/dashboard/chat/")
+                  }
+                >
+                  <Link href="/dashboard/chat">
+                    <PlusSquare />
                     <span>Chat</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {threads.map((t) => (
+                <SidebarMenuItem key={t.threadId}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === `/dashboard/chat/${t.threadId}`}
+                  >
+                    <Link href={`/dashboard/chat/${t.threadId}`}>
+                      <MessageCircle />
+                      <span>{t.title ?? "Untitled"}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -77,7 +98,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 >
                   <Link href="/dashboard/analytics">
                     <BarChart3 />
-                    <span>Web Analytics</span>
+                    <span>Web Traffic</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

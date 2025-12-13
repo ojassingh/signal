@@ -2,11 +2,17 @@
 
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
-import { session as sessionTable, sites } from "@/db/schema";
+import { chatThreads, session as sessionTable, sites } from "@/db/schema";
 import { authAction } from "@/lib/actions";
 import { SignalError } from "@/lib/errors";
 import { queryPipe } from "@/lib/tinybird";
-import type { DashboardOptions, DashboardRow, Site, User } from "@/lib/types";
+import type {
+  ChatThreadListItem,
+  DashboardOptions,
+  DashboardRow,
+  Site,
+  User,
+} from "@/lib/types";
 import { DateRangeKey, Grain } from "@/lib/types";
 import { computeRange, reduceDashboardRows } from "./site-helpers";
 
@@ -17,6 +23,7 @@ export const getSidebarData = authAction(
     user: Partial<User>;
     sites: Site[];
     activeDomain: string | null;
+    threads: ChatThreadListItem[];
   }> => {
     const userSites = await db
       .select()
@@ -40,6 +47,24 @@ export const getSidebarData = authAction(
         .where(eq(sessionTable.id, session.session.id));
     }
 
+    const threads = activeDomain
+      ? await db
+          .select({
+            threadId: chatThreads.id,
+            title: chatThreads.title,
+            updatedAt: chatThreads.updatedAt,
+          })
+          .from(chatThreads)
+          .where(
+            and(
+              eq(chatThreads.userId, session.user.id),
+              eq(chatThreads.domain, activeDomain)
+            )
+          )
+          .orderBy(desc(chatThreads.updatedAt))
+          .limit(5)
+      : [];
+
     return {
       user: {
         name: session.user.name,
@@ -48,6 +73,7 @@ export const getSidebarData = authAction(
       },
       sites: userSites,
       activeDomain,
+      threads,
     };
   }
 );
