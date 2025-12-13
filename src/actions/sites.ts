@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
 import { session as sessionTable, sites } from "@/db/schema";
 import { authAction } from "@/lib/actions";
@@ -21,12 +21,19 @@ export const getSidebarData = authAction(
     const userSites = await db
       .select()
       .from(sites)
-      .where(eq(sites.ownerId, session.user.id));
+      .where(eq(sites.ownerId, session.user.id))
+      .orderBy(desc(sites.createdAt));
 
     const fallbackDomain = userSites[0]?.domain ?? null;
-    const activeDomain = session.session.activeDomain ?? fallbackDomain;
+    const [storedSession] = await db
+      .select({ activeDomain: sessionTable.activeDomain })
+      .from(sessionTable)
+      .where(eq(sessionTable.id, session.session.id))
+      .limit(1);
+    const storedActiveDomain = storedSession?.activeDomain ?? null;
+    const activeDomain = storedActiveDomain ?? fallbackDomain;
 
-    if (activeDomain && activeDomain !== session.session.activeDomain) {
+    if (activeDomain && activeDomain !== storedActiveDomain) {
       await db
         .update(sessionTable)
         .set({ activeDomain })
@@ -79,7 +86,12 @@ export const createSite = authAction(
 
 export const getActiveSiteStats = authAction(
   async ({ session }, options: DashboardOptions = {}) => {
-    const activeDomain = session.session.activeDomain;
+    const [storedSession] = await db
+      .select({ activeDomain: sessionTable.activeDomain })
+      .from(sessionTable)
+      .where(eq(sessionTable.id, session.session.id))
+      .limit(1);
+    const activeDomain = storedSession?.activeDomain ?? null;
 
     if (!activeDomain) {
       throw SignalError.Site.NoActiveDomain();
