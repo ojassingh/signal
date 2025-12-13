@@ -1,7 +1,14 @@
+import type { ActionErrorPayload } from "./types";
+
 type SignalErrorProps = {
   code: string;
   message: string;
   isPublic?: boolean;
+};
+
+export const genericActionError: ActionErrorPayload = {
+  code: "INTERNAL_SERVER_ERROR",
+  message: "Something went wrong",
 };
 
 export class SignalError extends Error {
@@ -62,6 +69,33 @@ export class SignalError extends Error {
         code: "ANALYTICS_FETCH_FAILED",
         message: "Failed to fetch analytics data",
         isPublic: false,
+      }),
+  };
+
+  static Chat = {
+    ThreadIdRequired: (): SignalError =>
+      new SignalError({
+        code: "CHAT_THREAD_ID_REQUIRED",
+        message: "Missing thread id",
+        isPublic: true,
+      }),
+    ThreadNotFound: (): SignalError =>
+      new SignalError({
+        code: "CHAT_THREAD_NOT_FOUND",
+        message: "Chat thread not found",
+        isPublic: true,
+      }),
+    CreateThreadFailed: (): SignalError =>
+      new SignalError({
+        code: "CHAT_CREATE_THREAD_FAILED",
+        message: "Failed to create chat thread",
+        isPublic: true,
+      }),
+    PersistFailed: (): SignalError =>
+      new SignalError({
+        code: "CHAT_PERSIST_FAILED",
+        message: "Failed to save chat history",
+        isPublic: true,
       }),
   };
 }

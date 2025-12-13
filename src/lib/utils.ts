@@ -20,3 +20,9 @@ export function getDayPart(date = new Date()) {
 export function getFirstName(name?: string | null) {
   return first(words(name ?? "")) ?? "";
 }
+
+export function getGreeting(name?: string | null) {
+  const firstName = getFirstName(name);
+  const dayPart = getDayPart();
+  return `Good ${dayPart}, ${firstName ? ` ${firstName}` : ""}.`;
+}
