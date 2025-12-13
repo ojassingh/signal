@@ -83,7 +83,7 @@ function PromptInput({
           aria-disabled={disabled}
           className={cn(
             "cursor-text rounded-3xl border border-input bg-background/80 p-2 shadow-md backdrop-blur-sm supports-backdrop-filter:bg-background/60",
-            disabled ? "cursor-not-allowed opacity-60" : "",
+            disabled ? "cursor-not-allowed" : "",
             className
           )}
           {...props}

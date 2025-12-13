@@ -146,7 +146,7 @@ export async function POST(req: Request) {
 
             if (userText) {
               const { text } = await generateText({
-                model: openai(process.env.OPENAI_TITLE_MODEL ?? "gpt-4o-mini"),
+                model: openai("gpt-4o-mini"),
                 system:
                   "Generate a very short title for this conversation. Return only the title.",
                 prompt: userText.slice(0, 400),

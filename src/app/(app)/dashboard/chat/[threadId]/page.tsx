@@ -59,11 +59,11 @@ export default function Page() {
   }, [sendMessage, setMessages, thread, threadId]);
 
   useEffect(() => {
-    if (messages.length === 0 && !isLoading) {
+    if (messages.length === 0) {
       return;
     }
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages.length, isLoading]);
+  }, [messages.length]);
 
   if (isThreadLoading) {
     return <LoadingPage />;
@@ -101,8 +101,8 @@ export default function Page() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[calc(100svh-10rem)] w-full max-w-4xl flex-col gap-4">
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-4">
+    <div className="mx-auto flex min-h-[calc(100svh-10rem)] w-full max-w-3xl flex-col gap-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pt-4 pb-40">
         {messages.map((m) => {
           const text = getMessageText(m);
           const isUser = m.role === "user";
@@ -125,7 +125,6 @@ export default function Page() {
             </div>
           );
         })}
-        <div ref={bottomRef} />
       </div>
 
       <PromptInput
@@ -152,6 +151,8 @@ export default function Page() {
           </PromptInputAction>
         </PromptInputActions>
       </PromptInput>
+
+      <div ref={bottomRef} />
     </div>
   );
 }

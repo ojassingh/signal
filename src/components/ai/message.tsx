@@ -15,8 +15,10 @@ export type MessageProps = {
 } & React.HTMLProps<HTMLDivElement>;
 
 const Message = ({ children, className, isUser, ...props }: MessageProps) => (
-  <div className={cn("flex items-start gap-3", className)} {...props}>
-    {isUser ? null : <div className="mt-4 size-1.5 rounded-full bg-primary" />}
+  <div className={cn("flex items-start", className)} {...props}>
+    {isUser ? null : (
+      <div className="mt-[17px] size-1.5 rounded-full bg-primary" />
+    )}
     {children}
   </div>
 );

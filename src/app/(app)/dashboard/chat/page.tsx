@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowUp, Check, FilePen, Gpu, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -37,7 +37,7 @@ const suggestions = [
   },
   {
     icon: <Check className="size-5" />,
-    title: "Review technical SEO",
+    title: "Review SEO",
     prompt: "Review my technical SEO checklist and highlight priority fixes.",
   },
 ] as const;
@@ -46,9 +46,12 @@ export default function Page() {
   const router = useRouter();
   const session = useSession();
   const [input, setInput] = useState("");
-
+  const queryClient = useQueryClient();
   const createThread = useMutation({
     mutationFn: (domain: string) => createChatThread(domain),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sidebar-data"] });
+    },
   });
 
   const greeting = getGreeting(session.data?.user?.name);
@@ -87,31 +90,9 @@ export default function Page() {
     <div className="mx-auto grid h-[calc(100svh-20rem)] w-full max-w-3xl place-content-center gap-6 bg-background">
       <div className="space-y-1">
         <h1 className="text-center text-3xl tracking-tight">{greeting}</h1>
-        <p className="text-center text-muted-foreground">
-          Want an update or have a question? Just chat below.
+        <p className="mt-2 text-center text-muted-foreground">
+          Have any questions? Just chat below.
         </p>
-      </div>
-
-      <div className="space-y-4">
-        <div className="grid gap-3 md:grid-cols-2">
-          {suggestions.map((s) => (
-            <Card
-              className="cursor-pointer gap-0 hover:shadow-md"
-              key={s.title}
-              onClick={() => setInput(s.prompt)}
-              role="button"
-              tabIndex={0}
-            >
-              <CardHeader>
-                <CardTitle>{s.icon}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {s.title}
-                <p className="text-muted-foreground text-sm">{s.prompt}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
       </div>
 
       <PromptInput
@@ -141,6 +122,32 @@ export default function Page() {
           </PromptInputAction>
         </PromptInputActions>
       </PromptInput>
+
+      <div className="space-y-4">
+        <p className="text-muted-foreground text-sm">
+          If you're not sure where to start, try these:
+        </p>
+        <div className="grid gap-3 md:grid-cols-4">
+          {suggestions.map((s) => (
+            <Card
+              className="cursor-pointer p-3 hover:shadow-md"
+              key={s.title}
+              onClick={() => submitText(s.prompt)}
+              role="button"
+              tabIndex={0}
+            >
+              <CardHeader className="p-0">
+                <CardTitle className="text-muted-foreground">
+                  {s.icon}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <p className="font-medium text-sm">{s.title}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
