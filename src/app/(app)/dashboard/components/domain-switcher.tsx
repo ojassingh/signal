@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronsUpDown, Globe } from "lucide-react";
+import { Check, ChevronsUpDown, Globe2 } from "lucide-react";
 import { toast } from "sonner";
 import { setActiveDomain } from "@/actions/sites";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useSidebar } from "@/components/ui/sidebar";
 import type { Site } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ export function DomainSwitcher({
   sites: Site[];
   activeDomain?: string | null;
 }) {
+  const { state } = useSidebar();
   const queryClient = useQueryClient();
   const current =
     sites.find((site) => site.domain === activeDomain) ?? sites[0];
@@ -52,8 +54,10 @@ export function DomainSwitcher({
           variant="outline"
         >
           <span className="flex items-center gap-2">
-            <Globe className="h-4 w-4" />
-            <span className="truncate">{current.name || current.domain}</span>
+            <Globe2 className="h-4 w-4" />
+            {state === "expanded" && (
+              <span>{current.name || current.domain}</span>
+            )}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-50" />
         </Button>

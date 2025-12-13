@@ -8,22 +8,12 @@ import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getSidebarData } from "@/actions/sites";
+import { LoadingPage } from "@/components/loading";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-
-function getDayPart(date = new Date()) {
-  const h = date.getHours();
-  if (h < 12) {
-    return "morning";
-  }
-  if (h < 18) {
-    return "afternoon";
-  }
-  return "evening";
-}
+import { cn, getDayPart, getFirstName } from "@/lib/utils";
 
 function ThinkingDots() {
   return (
@@ -73,14 +63,18 @@ export function AssistantChat() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [input, setInput] = useState("");
 
-  const { data } = useQuery({
+  const {
+    data,
+    isLoading: isSidebarLoading,
+    isFetching,
+  } = useQuery({
     queryKey: ["sidebar-data"],
     queryFn: getSidebarData,
   });
 
   const sidebar = data?.success ? data.data : null;
-  const name = sidebar?.user?.name ?? "";
-  const greeting = `Good ${getDayPart()}${name ? ` ${name}` : ""}.`;
+  const firstName = getFirstName(sidebar?.user?.name);
+  const greeting = `Good ${getDayPart()}, ${firstName ? ` ${firstName}` : ""}.`;
 
   const { messages, sendMessage, status } = useChat();
 
@@ -91,6 +85,10 @@ export function AssistantChat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length]);
 
+  if (isSidebarLoading || isFetching) {
+    return <LoadingPage />;
+  }
+
   const onPickSuggestion = async (prompt: string) => {
     await sendMessage({ text: prompt });
   };
@@ -100,9 +98,7 @@ export function AssistantChat() {
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6">
       <div className="space-y-1">
-        <h1 className="text-center font-semibold text-3xl tracking-tight">
-          {greeting}
-        </h1>
+        <h1 className="text-center text-3xl tracking-tight">{greeting}</h1>
         <p className="text-center text-muted-foreground">
           Want an update or have a question? Just chat below.
         </p>

@@ -1,8 +1,8 @@
 "use server";
 
-import { head, split } from "lodash";
 import { Resend } from "resend";
 import { authAction } from "@/lib/actions";
+import { getFirstName } from "@/lib/utils";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -11,7 +11,7 @@ export const sendWelcomeEmail = authAction(
     _,
     { email, name }: { email: string; name: string }
   ): Promise<void> => {
-    const firstName = head(split(name, " ")) || "there";
+    const firstName = getFirstName(name) || "there";
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL as string,
       to: email,

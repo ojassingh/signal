@@ -6,6 +6,7 @@ import { Eye, Users } from "lucide-react";
 import Link from "next/link";
 import { Area, AreaChart, Bar, BarChart, XAxis, YAxis } from "recharts";
 import { getActiveSiteStats } from "@/actions/sites";
+import { LoadingPage } from "@/components/loading";
 import {
   Card,
   CardContent,
@@ -19,7 +20,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { Spinner } from "@/components/ui/spinner";
 import type { ActionResponse, SiteStats } from "@/lib/types";
 
 const chartConfig = {
@@ -49,11 +49,7 @@ export default function AnalyticsPage() {
   });
 
   if (isLoading || isFetching) {
-    return (
-      <div className="grid h-[calc(100vh-7rem)] w-full place-content-center">
-        <Spinner className="size-6 text-primary" />
-      </div>
-    );
+    return <LoadingPage />;
   }
 
   if (!result?.success) {
