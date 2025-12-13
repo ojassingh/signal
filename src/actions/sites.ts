@@ -24,14 +24,14 @@ export const getSidebarData = authAction(
       .where(eq(sites.ownerId, session.user.id))
       .orderBy(desc(sites.createdAt));
 
-    const fallbackDomain = userSites[0]?.domain ?? null;
     const [storedSession] = await db
       .select({ activeDomain: sessionTable.activeDomain })
       .from(sessionTable)
       .where(eq(sessionTable.id, session.session.id))
       .limit(1);
+
     const storedActiveDomain = storedSession?.activeDomain ?? null;
-    const activeDomain = storedActiveDomain ?? fallbackDomain;
+    const activeDomain = storedActiveDomain ?? userSites[0]?.domain ?? null;
 
     if (activeDomain && activeDomain !== storedActiveDomain) {
       await db

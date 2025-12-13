@@ -2,7 +2,6 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronsUpDown, Globe } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { setActiveDomain } from "@/actions/sites";
 import { Button } from "@/components/ui/button";
@@ -23,14 +22,12 @@ export function DomainSwitcher({
   activeDomain?: string | null;
 }) {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const current =
     sites.find((site) => site.domain === activeDomain) ?? sites[0];
   const { mutate, isPending } = useMutation({
     mutationFn: (domain: string) => setActiveDomain(domain),
     onSuccess: async (result) => {
       if (result.success) {
-        router.refresh();
         await Promise.all([
           queryClient.refetchQueries({ queryKey: ["sidebar-data"] }),
           queryClient.refetchQueries({ queryKey: ["active-site-stats"] }),

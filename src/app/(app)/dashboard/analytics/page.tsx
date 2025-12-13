@@ -39,12 +39,16 @@ type ActiveStatsResponse = ActionResponse<{
 }>;
 
 export default function AnalyticsPage() {
-  const { data: result, isLoading } = useQuery<ActiveStatsResponse>({
+  const {
+    data: result,
+    isLoading,
+    isFetching,
+  } = useQuery<ActiveStatsResponse>({
     queryKey: ["active-site-stats"],
     queryFn: () => getActiveSiteStats(),
   });
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="grid h-[calc(100vh-7rem)] w-full place-content-center">
         <Spinner className="size-6 text-primary" />
@@ -105,7 +109,9 @@ export default function AnalyticsPage() {
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <div>
-          <h1 className="text-2xl">Analytics</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl">Analytics</h1>
+          </div>
           <p className="text-muted-foreground text-sm">{site.domain}</p>
         </div>
       </div>
