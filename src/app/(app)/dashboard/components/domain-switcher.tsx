@@ -59,7 +59,9 @@ export function DomainSwitcher({
               <span>{current.name || current.domain}</span>
             )}
           </span>
-          <ChevronsUpDown className="h-4 w-4 opacity-50" />
+          {state === "expanded" && (
+            <ChevronsUpDown className="h-4 w-4 opacity-50" />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[240px]">
