@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getDayPart(date = new Date()) {
   const hours = date.getHours();
-  if (hours < 12) {
+  if (hours > 4 && hours < 12) {
     return "morning";
   }
   if (hours < 18) {
