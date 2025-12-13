@@ -1,14 +1,9 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { SignalError } from "@/lib/errors";
-import type { ActionErrorPayload, ActionResponse } from "@/lib/types";
+import { genericActionError, SignalError } from "@/lib/errors";
+import type { ActionResponse } from "@/lib/types";
 
 type Session = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
-
-const genericError: ActionErrorPayload = {
-  code: "INTERNAL_SERVER_ERROR",
-  message: "Something went wrong",
-};
 
 export function authAction<Args extends unknown[], Return>(
   fn: (ctx: { session: Session }, ...args: Args) => Promise<Return>
@@ -36,13 +31,15 @@ export function authAction<Args extends unknown[], Return>(
           success: false,
           error: {
             code: error.code,
-            message: error.isPublic ? error.message : genericError.message,
+            message: error.isPublic
+              ? error.message
+              : genericActionError.message,
           },
         };
       }
 
       console.error(error);
-      return { success: false, error: genericError };
+      return { success: false, error: genericActionError };
     }
   };
 }
