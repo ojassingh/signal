@@ -1,7 +1,10 @@
+import type { UIMessage } from "ai";
 import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
+  integer,
+  jsonb,
   pgTable,
   primaryKey,
   text,
@@ -106,11 +109,53 @@ export const siteMembers = pgTable(
   (table) => [primaryKey({ columns: [table.siteId, table.userId] })]
 );
 
+export const chatThreads = pgTable(
+  "chat_threads",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    domain: text("domain").notNull(),
+    title: text("title"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("chat_threads_user_domain_updated_idx").on(
+      table.userId,
+      table.domain,
+      table.updatedAt
+    ),
+  ]
+);
+
+export const chatMessages = pgTable(
+  "chat_messages",
+  {
+    threadId: uuid("thread_id")
+      .notNull()
+      .references(() => chatThreads.id, { onDelete: "cascade" }),
+    messageId: text("message_id").notNull(),
+    seq: integer("seq").notNull(),
+    message: jsonb("message").$type<UIMessage>().notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.threadId, table.messageId] }),
+    index("chat_messages_thread_seq_idx").on(table.threadId, table.seq),
+  ]
+);
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
   ownedSites: many(sites),
   siteMembers: many(siteMembers),
+  chatThreads: many(chatThreads),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -143,5 +188,20 @@ export const siteMembersRelations = relations(siteMembers, ({ one }) => ({
   user: one(user, {
     fields: [siteMembers.userId],
     references: [user.id],
+  }),
+}));
+
+export const chatThreadsRelations = relations(chatThreads, ({ one, many }) => ({
+  user: one(user, {
+    fields: [chatThreads.userId],
+    references: [user.id],
+  }),
+  messages: many(chatMessages),
+}));
+
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+  thread: one(chatThreads, {
+    fields: [chatMessages.threadId],
+    references: [chatThreads.id],
   }),
 }));
