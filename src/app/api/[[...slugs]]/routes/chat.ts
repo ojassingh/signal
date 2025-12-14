@@ -5,7 +5,7 @@ import {
   streamText,
   type UIMessage,
 } from "ai";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { Elysia } from "elysia";
 import { db } from "@/db/drizzle";
 import { chatThreads } from "@/db/schema";
@@ -95,43 +95,18 @@ export function registerChatRoutes(app: Elysia) {
       return result.toUIMessageStreamResponse({
         originalMessages: inputMessages,
         onFinish: async ({ messages: finishedMessages }) => {
-          try {
-            const startSave = Date.now();
+          const startSave = Date.now();
+          await db
+            .update(chatThreads)
+            .set({ messages: finishedMessages, updatedAt: new Date() })
+            .where(eq(chatThreads.id, threadId));
 
-            const [thread] = await db
-              .select({ id: chatThreads.id })
-              .from(chatThreads)
-              .where(
-                and(
-                  eq(chatThreads.id, threadId),
-                  eq(chatThreads.userId, session.user.id),
-                  eq(chatThreads.domain, activeDomain)
-                )
-              )
-              .limit(1);
-
-            if (!thread) {
-              throw SignalError.Chat.ThreadNotFound();
-            }
-
-            await db
-              .update(chatThreads)
-              .set({ messages: finishedMessages, updatedAt: new Date() })
-              .where(eq(chatThreads.id, threadId));
-
-            const elapsedSave = Date.now() - startSave;
-            console.log(
-              "[API Chat Route] Time taken to update thread messages:",
-              elapsedSave,
-              "ms"
-            );
-          } catch (error) {
-            console.error(error);
-            if (error instanceof SignalError) {
-              throw error;
-            }
-            throw genericActionError;
-          }
+          const elapsedSave = Date.now() - startSave;
+          console.log(
+            "[API Chat Route] Time taken to update thread messages:",
+            elapsedSave,
+            "ms"
+          );
         },
       });
     } catch (error) {
