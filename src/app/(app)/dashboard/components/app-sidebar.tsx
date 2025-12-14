@@ -37,21 +37,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const activeDomain = sidebarData?.activeDomain ?? null;
   const threads = sidebarData?.threads ?? [];
 
-  let headerContent: React.ReactNode = (
-    <Skeleton className="h-12 w-full rounded-lg" />
-  );
-  if (!isLoading) {
-    headerContent =
-      sites.length === 0 ? (
-        <Skeleton className="h-12 w-full rounded-lg" />
-      ) : (
-        <DomainSwitcher activeDomain={activeDomain} sites={sites} />
-      );
-  }
-
   return (
     <Sidebar className="min-h-screen" collapsible="none" {...props}>
-      <SidebarHeader>{headerContent}</SidebarHeader>
+      <SidebarHeader>
+        {isLoading ? (
+          <Skeleton className="h-12 w-full rounded-lg" />
+        ) : (
+          <DomainSwitcher activeDomain={activeDomain} sites={sites} />
+        )}
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Agent</SidebarGroupLabel>
