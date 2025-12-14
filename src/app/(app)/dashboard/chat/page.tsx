@@ -50,13 +50,6 @@ export default function Page() {
   const createThread = useMutation({
     mutationFn: ({ firstMessage }: { firstMessage: string }) =>
       createChatThread(firstMessage),
-    onSuccess: (data) => {
-      if (!data.success) {
-        toast.error(data.error.message);
-        return;
-      }
-      queryClient.refetchQueries({ queryKey: ["sidebar-data"] });
-    },
   });
 
   const greeting = getGreeting(session.data?.user?.name);
@@ -79,6 +72,7 @@ export default function Page() {
     if (!text || createThread.isPending) {
       return;
     }
+    queryClient.refetchQueries({ queryKey: ["sidebar-data"] });
     setInput("");
     await submitText(text);
   };
