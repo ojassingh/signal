@@ -118,7 +118,7 @@ export default function Page() {
 
   return (
     <div className="mx-auto flex min-h-[calc(100svh-10rem)] w-full max-w-3xl flex-col gap-4">
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pt-4 pb-40">
+      <div className="flex flex-1 flex-col gap-3 pt-4 pb-40">
         {messages.map((m) => {
           const text = getMessageText(m);
           const isUser = m.role === "user";
@@ -142,34 +142,37 @@ export default function Page() {
           );
         })}
         {status === "submitted" && <LoadingMessage />}
+        <div ref={bottomRef} />
       </div>
 
-      <PromptInput
-        className="sticky bottom-6"
-        disabled={isLoading}
-        isLoading={isLoading}
-        onSubmit={handleSubmit}
-        onValueChange={setInput}
-        value={input}
-      >
-        <PromptInputTextarea placeholder="Ask about your traffic, growth ideas, or research anything…" />
-        <PromptInputActions className="justify-end">
-          <PromptInputAction tooltip="Send">
-            <Button
-              className="rounded-full bg-primary text-primary-foreground"
-              disabled={!input.trim() || isLoading}
-              onClick={handleSubmit}
-              size="icon"
-              type="button"
-              variant="ghost"
-            >
-              {isLoading ? <Spinner className="size-4" /> : <ArrowUp />}
-            </Button>
-          </PromptInputAction>
-        </PromptInputActions>
-      </PromptInput>
-
-      <div ref={bottomRef} />
+      <div className="fixed inset-x-0 bottom-8 z-0 pl-(--sidebar-width)">
+        <div className="mx-auto w-full max-w-3xl px-4">
+          <PromptInput
+            className="w-full"
+            disabled={isLoading}
+            isLoading={isLoading}
+            onSubmit={handleSubmit}
+            onValueChange={setInput}
+            value={input}
+          >
+            <PromptInputTextarea placeholder="Ask about your traffic, growth ideas, or research anything…" />
+            <PromptInputActions className="justify-end">
+              <PromptInputAction tooltip="Send">
+                <Button
+                  className="rounded-full bg-primary text-primary-foreground"
+                  disabled={!input.trim() || isLoading}
+                  onClick={handleSubmit}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  {isLoading ? <Spinner className="size-4" /> : <ArrowUp />}
+                </Button>
+              </PromptInputAction>
+            </PromptInputActions>
+          </PromptInput>
+        </div>
+      </div>
     </div>
   );
 }

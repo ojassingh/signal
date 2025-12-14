@@ -50,7 +50,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar className="min-h-screen" collapsible="none" {...props}>
       <SidebarHeader>{headerContent}</SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

@@ -170,7 +170,7 @@ function Sidebar({
     return (
       <div
         className={cn(
-          "flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground",
+          "fixed inset-y-0 left-0 flex h-screen w-(--sidebar-width) flex-col border-r bg-sidebar text-sidebar-foreground",
           className
         )}
         data-slot="sidebar"
