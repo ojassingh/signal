@@ -167,16 +167,59 @@ function Sidebar({
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
 
   if (collapsible === "none") {
+    if (isMobile) {
+      return (
+        <Sheet onOpenChange={setOpenMobile} open={openMobile} {...props}>
+          <SheetContent
+            className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            data-mobile="true"
+            data-sidebar="sidebar"
+            data-slot="sidebar"
+            side={side}
+            style={
+              {
+                "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+              } as React.CSSProperties
+            }
+          >
+            <SheetHeader className="sr-only">
+              <SheetTitle>Sidebar</SheetTitle>
+              <SheetDescription>Displays the mobile sidebar.</SheetDescription>
+            </SheetHeader>
+            <div className="flex h-full w-full flex-col">{children}</div>
+          </SheetContent>
+        </Sheet>
+      );
+    }
     return (
       <div
-        className={cn(
-          "fixed inset-y-0 left-0 flex h-screen w-(--sidebar-width) flex-col border-r bg-sidebar text-sidebar-foreground",
-          className
-        )}
+        className="group peer hidden text-sidebar-foreground md:block"
+        data-side={side}
         data-slot="sidebar"
-        {...props}
+        data-variant={variant}
       >
-        {children}
+        <div
+          className="relative w-(--sidebar-width) bg-transparent"
+          data-slot="sidebar-gap"
+        />
+        <div
+          className={cn(
+            "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) md:flex",
+            side === "left" ? "left-0" : "right-0",
+            "border-r bg-sidebar",
+            className
+          )}
+          data-slot="sidebar-container"
+          {...props}
+        >
+          <div
+            className="flex h-full w-full flex-col"
+            data-sidebar="sidebar"
+            data-slot="sidebar-inner"
+          >
+            {children}
+          </div>
+        </div>
       </div>
     );
   }
