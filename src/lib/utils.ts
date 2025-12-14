@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { first, words } from "lodash";
 import { twMerge } from "tailwind-merge";
+import z from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -25,4 +26,9 @@ export function getGreeting(name?: string | null) {
   const firstName = getFirstName(name);
   const dayPart = getDayPart();
   return `Good ${dayPart}, ${firstName ? ` ${firstName}` : ""}.`;
+}
+
+export function isValidUUID(value: string) {
+  const uiud = z.uuid();
+  return uiud.safeParse(value).success;
 }

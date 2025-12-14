@@ -1,3 +1,4 @@
+import type { UIMessage } from "@ai-sdk/react";
 import type { chatThreads, sites, user } from "@/db/schema";
 
 export type User = typeof user.$inferSelect;
@@ -93,3 +94,9 @@ export type SiteStats = {
   topPages: TopPage[];
   topReferrers: TopReferrer[];
 };
+
+export type ToolPart = Extract<Part, { type: `tool-${string}` }>;
+export type DynamicToolPart = Extract<Part, { type: "dynamic-tool" }>;
+export type DataPart = Extract<Part, { type: `data-${string}` }>;
+export type Part = UIMessage["parts"][number];
+export type SourceUrlPart = Extract<Part, { type: "source-url" }>;

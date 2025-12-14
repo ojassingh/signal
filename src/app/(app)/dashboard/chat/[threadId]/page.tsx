@@ -4,11 +4,9 @@ import { useChat } from "@ai-sdk/react";
 import { useQuery } from "@tanstack/react-query";
 import { DefaultChatTransport } from "ai";
 import { ArrowUp } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import { memo, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { redirect, useParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { getChatThread } from "@/actions/chat";
-import { Message, MessageContent } from "@/components/ai/message";
 import {
   PromptInput,
   PromptInputAction,
@@ -18,20 +16,26 @@ import {
 import { LoadingPage } from "@/components/loading";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { cn } from "@/lib/utils";
+import { isValidUUID } from "@/lib/utils";
+import { ChatMessage, LoadingMessage } from "./chat-helpers";
+
+const getThreadIdFromParam = (param: string | string[] | undefined) =>
+  Array.isArray(param) ? (param[0] ?? "") : (param ?? "");
 
 export default function Page() {
   const params = useParams();
-  const router = useRouter();
-  const threadId = params.threadId as string;
+  const threadId = getThreadIdFromParam(params.threadId);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const initSentRef = useRef<string | null>(null);
   const [input, setInput] = useState("");
 
+  const invalidThreadId = Boolean(threadId) && !isValidUUID(threadId);
+
   const { data, isLoading: isThreadLoading } = useQuery({
     queryKey: ["chat-thread", threadId],
     queryFn: () => getChatThread(threadId),
-    enabled: !!threadId,
+    enabled: !!threadId && !invalidThreadId,
+    retry: false,
   });
 
   const { messages, sendMessage, setMessages, status } = useChat({
@@ -69,19 +73,17 @@ export default function Page() {
     return <LoadingPage />;
   }
 
+  if (invalidThreadId) {
+    redirect("/dashboard/chat?error=CHAT_THREAD_NOT_FOUND");
+  }
+
   if (!data) {
     return null;
   }
 
   if (!data.success) {
-    router.push("/dashboard/chat");
-    toast.error(data.error.message);
-    return null;
+    redirect(`/dashboard/chat?error=${encodeURIComponent(data.error.code)}`);
   }
-
-  const submitText = async (text: string) => {
-    await sendMessage({ text }, { body: { threadId } });
-  };
 
   const handleSubmit = async () => {
     const text = input.trim();
@@ -89,62 +91,21 @@ export default function Page() {
       return;
     }
     setInput("");
-    await submitText(text);
+    await sendMessage({ text }, { body: { threadId } });
   };
-
-  const getMessageText = (m: (typeof messages)[number]) => {
-    const parts = m.parts ?? [];
-    return parts
-      .map((p) => (p.type === "text" ? p.text : ""))
-      .join("")
-      .trim();
-  };
-
-  const LoadingMessage = memo(() => (
-    <div className="flex">
-      <Message className="mx-auto flex w-full max-w-3xl flex-col items-start gap-2 px-0 md:px-10">
-        <div className="group flex w-full flex-col gap-0">
-          <div className="prose w-full min-w-0 flex-1 rounded-lg bg-transparent p-0 text-foreground">
-            <span className="inline-flex gap-1">
-              <span className="inline-block size-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:0ms]" />
-              <span className="inline-block size-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" />
-              <span className="inline-block size-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" />
-            </span>
-          </div>
-        </div>
-      </Message>
-    </div>
-  ));
 
   return (
     <div className="mx-auto flex min-h-[calc(100svh-10rem)] w-full max-w-3xl flex-col gap-4">
       <div className="flex flex-1 flex-col gap-3 pt-4 pb-40">
-        {messages.map((m) => {
-          const text = getMessageText(m);
-          const isUser = m.role === "user";
-          if (!text) {
-            return null;
-          }
-          return (
-            <div className={cn("flex", isUser ? "justify-end" : "")} key={m.id}>
-              {isUser ? null : (
-                <div className="mt-[17px] size-1.5 rounded-full bg-primary" />
-              )}
-              <Message className={cn(isUser ? "flex-row-reverse" : "")}>
-                <MessageContent
-                  className={cn(isUser ? "bg-secondary" : "")}
-                  markdown={!isUser}
-                >
-                  {text}
-                </MessageContent>
-              </Message>
-            </div>
-          );
-        })}
+        {messages.map((message, index) => (
+          <ChatMessage
+            key={message.id || `message-${index}`}
+            message={message}
+          />
+        ))}
         {status === "submitted" && <LoadingMessage />}
-        <div ref={bottomRef} />
       </div>
-
+      <div ref={bottomRef} />
       <div className="fixed inset-x-0 bottom-8 z-0 pl-(--sidebar-width)">
         <div className="mx-auto w-full max-w-3xl px-4">
           <PromptInput
