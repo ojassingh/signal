@@ -35,7 +35,7 @@ export function registerChatRoutes(app: Elysia) {
       const start = Date.now();
       const session = await auth.api.getSession({ headers: request.headers });
       const elapsed = Date.now() - start;
-      console.log("[API Chat Route] Time taken to get session:", elapsed);
+      console.log("[API Chat Route] Time taken to get session:", elapsed, "ms");
 
       if (!session) {
         const error = SignalError.Auth.Unauthorized();
@@ -96,6 +96,8 @@ export function registerChatRoutes(app: Elysia) {
         originalMessages: inputMessages,
         onFinish: async ({ messages: finishedMessages }) => {
           try {
+            const startSave = Date.now();
+
             const [thread] = await db
               .select({ id: chatThreads.id })
               .from(chatThreads)
@@ -116,6 +118,13 @@ export function registerChatRoutes(app: Elysia) {
               .update(chatThreads)
               .set({ messages: finishedMessages, updatedAt: new Date() })
               .where(eq(chatThreads.id, threadId));
+
+            const elapsedSave = Date.now() - startSave;
+            console.log(
+              "[API Chat Route] Time taken to update thread messages:",
+              elapsedSave,
+              "ms"
+            );
           } catch (error) {
             console.error(error);
             if (error instanceof SignalError) {
