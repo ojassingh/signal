@@ -50,7 +50,7 @@ export default function Page() {
   const createThread = useMutation({
     mutationFn: (domain: string) => createChatThread(domain),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sidebar-data"] });
+      queryClient.refetchQueries({ queryKey: ["sidebar-data"] });
     },
   });
 
