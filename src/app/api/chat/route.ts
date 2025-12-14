@@ -1,7 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import {
   convertToModelMessages,
-  generateText,
   stepCountIs,
   streamText,
   type UIMessage,
@@ -10,11 +9,7 @@ import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { getSidebarData } from "@/actions/sites";
 import { db } from "@/db/drizzle";
-import {
-  chatMessages,
-  chatThreads,
-  session as sessionTable,
-} from "@/db/schema";
+import { chatThreads } from "@/db/schema";
 import { assistantTools } from "@/lib/ai/tools";
 import { auth } from "@/lib/auth";
 import { genericActionError, SignalError } from "@/lib/errors";
@@ -23,8 +18,10 @@ export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
-    const { threadId, messages }: { threadId?: string; messages: UIMessage[] } =
-      await req.json();
+    const {
+      threadId,
+      messages: inputMessages,
+    }: { threadId?: string; messages: UIMessage[] } = await req.json();
 
     if (!threadId) {
       const error = SignalError.Chat.ThreadIdRequired();
@@ -43,13 +40,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const [storedSession] = await db
-      .select({ activeDomain: sessionTable.activeDomain })
-      .from(sessionTable)
-      .where(eq(sessionTable.id, session.session.id))
-      .limit(1);
-
-    const activeDomain = storedSession?.activeDomain ?? null;
+    const activeDomain = session.session.activeDomain;
     if (!activeDomain) {
       const error = SignalError.Site.NoActiveDomain();
       return Response.json(
@@ -59,21 +50,17 @@ export async function POST(req: Request) {
     }
 
     const [thread] = await db
-      .select({
-        id: chatThreads.id,
-        title: chatThreads.title,
-        domain: chatThreads.domain,
-      })
+      .select({ id: chatThreads.id })
       .from(chatThreads)
       .where(
         and(
           eq(chatThreads.id, threadId),
-          eq(chatThreads.userId, session.user.id)
+          eq(chatThreads.userId, session.user.id),
+          eq(chatThreads.domain, activeDomain)
         )
       )
       .limit(1);
-
-    if (!thread || thread.domain !== activeDomain) {
+    if (!thread) {
       const error = SignalError.Chat.ThreadNotFound();
       return Response.json(
         { success: false, error: { code: error.code, message: error.message } },
@@ -107,66 +94,21 @@ export async function POST(req: Request) {
     const result = streamText({
       model: openai(process.env.OPENAI_MODEL ?? "gpt-5.2"),
       system,
-      messages: convertToModelMessages(messages),
+      messages: convertToModelMessages(inputMessages),
       tools: assistantTools,
       stopWhen: stepCountIs(10),
     });
 
+    result.consumeStream();
+
     return result.toUIMessageStreamResponse({
-      originalMessages: messages,
+      originalMessages: inputMessages,
       onFinish: async ({ messages: finishedMessages }) => {
         try {
-          const values = finishedMessages.map((m, seq) => ({
-            threadId,
-            messageId: m.id,
-            seq,
-            message: m,
-          }));
-
-          await db
-            .insert(chatMessages)
-            .values(values)
-            .onConflictDoNothing({
-              target: [chatMessages.threadId, chatMessages.messageId],
-            });
-
           await db
             .update(chatThreads)
-            .set({ updatedAt: new Date() })
+            .set({ messages: finishedMessages, updatedAt: new Date() })
             .where(eq(chatThreads.id, threadId));
-
-          if (!thread.title) {
-            const firstUser = finishedMessages.find((m) => m.role === "user");
-            const userText =
-              firstUser?.parts
-                .filter((p) => p.type === "text")
-                .map((p) => p.text)
-                .join("")
-                .trim() ?? "";
-
-            if (userText) {
-              const { text } = await generateText({
-                model: openai("gpt-4o-mini"),
-                system:
-                  "Generate a very short title for this conversation. Return only the title.",
-                prompt: userText.slice(0, 400),
-                temperature: 0.5,
-              });
-
-              const title = text
-                .trim()
-                .replace(/^"|"$/g, "")
-                .replace(/^'|'$/g, "")
-                .slice(0, 80);
-
-              if (title) {
-                await db
-                  .update(chatThreads)
-                  .set({ title })
-                  .where(eq(chatThreads.id, threadId));
-              }
-            }
-          }
         } catch (error) {
           console.error(SignalError.Chat.PersistFailed(), error);
         }

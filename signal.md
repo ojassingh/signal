@@ -369,7 +369,6 @@ bun lint
 bun format
 
 # Database migrations
-bunx drizzle-kit generate  # Generate migrations
 bunx drizzle-kit push      # Push to database
 bunx drizzle-kit studio    # Open Drizzle Studio
 ```

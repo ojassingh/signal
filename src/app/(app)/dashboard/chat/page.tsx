@@ -88,7 +88,7 @@ export default function Page() {
 
   return (
     <div className="mx-auto grid h-[calc(100svh-20rem)] w-full max-w-3xl place-content-center gap-6 bg-background">
-      <div className="space-y-1">
+      <div className="mt-20 space-y-1">
         <h1 className="text-center text-3xl tracking-tight">{greeting}</h1>
         <p className="mt-2 text-center text-muted-foreground">
           Have any questions? Just chat below.

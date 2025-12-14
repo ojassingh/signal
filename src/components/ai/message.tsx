@@ -11,14 +11,10 @@ import { Markdown } from "./markdown";
 export type MessageProps = {
   children: React.ReactNode;
   className?: string;
-  isUser?: boolean;
 } & React.HTMLProps<HTMLDivElement>;
 
-const Message = ({ children, className, isUser, ...props }: MessageProps) => (
+const Message = ({ children, className, ...props }: MessageProps) => (
   <div className={cn("flex items-start", className)} {...props}>
-    {isUser ? null : (
-      <div className="mt-[17px] size-1.5 rounded-full bg-primary" />
-    )}
     {children}
   </div>
 );

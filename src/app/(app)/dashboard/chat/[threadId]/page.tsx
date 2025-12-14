@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { DefaultChatTransport } from "ai";
 import { ArrowUp } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getChatThread } from "@/actions/chat";
 import { Message, MessageContent } from "@/components/ai/message";
@@ -38,7 +38,7 @@ export default function Page() {
     transport: new DefaultChatTransport({ api: "/api/chat" }),
   });
 
-  const isLoading = status === "submitted" || status === "streaming";
+  const isLoading = status === "streaming";
   const thread = data?.success ? data.data : null;
 
   useEffect(() => {
@@ -100,6 +100,22 @@ export default function Page() {
       .trim();
   };
 
+  const LoadingMessage = memo(() => (
+    <div className="flex">
+      <Message className="mx-auto flex w-full max-w-3xl flex-col items-start gap-2 px-0 md:px-10">
+        <div className="group flex w-full flex-col gap-0">
+          <div className="prose w-full min-w-0 flex-1 rounded-lg bg-transparent p-0 text-foreground">
+            <span className="inline-flex gap-1">
+              <span className="inline-block size-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:0ms]" />
+              <span className="inline-block size-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" />
+              <span className="inline-block size-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" />
+            </span>
+          </div>
+        </div>
+      </Message>
+    </div>
+  ));
+
   return (
     <div className="mx-auto flex min-h-[calc(100svh-10rem)] w-full max-w-3xl flex-col gap-4">
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pt-4 pb-40">
@@ -111,10 +127,10 @@ export default function Page() {
           }
           return (
             <div className={cn("flex", isUser ? "justify-end" : "")} key={m.id}>
-              <Message
-                className={cn(isUser ? "flex-row-reverse" : "")}
-                isUser={isUser}
-              >
+              {isUser ? null : (
+                <div className="mt-[17px] size-1.5 rounded-full bg-primary" />
+              )}
+              <Message className={cn(isUser ? "flex-row-reverse" : "")}>
                 <MessageContent
                   className={cn(isUser ? "bg-secondary" : "")}
                   markdown={!isUser}
@@ -125,6 +141,7 @@ export default function Page() {
             </div>
           );
         })}
+        {status === "submitted" && <LoadingMessage />}
       </div>
 
       <PromptInput

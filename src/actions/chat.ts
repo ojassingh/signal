@@ -1,8 +1,8 @@
 "use server";
 
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
-import { chatMessages, chatThreads } from "@/db/schema";
+import { chatThreads } from "@/db/schema";
 import { authAction } from "@/lib/actions";
 import { SignalError } from "@/lib/errors";
 
@@ -54,6 +54,7 @@ export const getChatThread = authAction(
         threadId: chatThreads.id,
         title: chatThreads.title,
         domain: chatThreads.domain,
+        messages: chatThreads.messages,
       })
       .from(chatThreads)
       .where(
@@ -68,17 +69,11 @@ export const getChatThread = authAction(
       throw SignalError.Chat.ThreadNotFound();
     }
 
-    const rows = await db
-      .select({ message: chatMessages.message })
-      .from(chatMessages)
-      .where(eq(chatMessages.threadId, thread.threadId))
-      .orderBy(asc(chatMessages.seq));
-
     return {
       threadId: thread.threadId,
       title: thread.title,
       domain: thread.domain,
-      messages: rows.map((r) => r.message),
+      messages: thread.messages ?? [],
     };
   }
 );

@@ -1,9 +1,8 @@
 import type { UIMessage } from "ai";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
   index,
-  integer,
   jsonb,
   pgTable,
   primaryKey,
@@ -118,6 +117,10 @@ export const chatThreads = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     domain: text("domain").notNull(),
     title: text("title"),
+    messages: jsonb("messages")
+      .$type<UIMessage[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -130,23 +133,6 @@ export const chatThreads = pgTable(
       table.domain,
       table.updatedAt
     ),
-  ]
-);
-
-export const chatMessages = pgTable(
-  "chat_messages",
-  {
-    threadId: uuid("thread_id")
-      .notNull()
-      .references(() => chatThreads.id, { onDelete: "cascade" }),
-    messageId: text("message_id").notNull(),
-    seq: integer("seq").notNull(),
-    message: jsonb("message").$type<UIMessage>().notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (table) => [
-    primaryKey({ columns: [table.threadId, table.messageId] }),
-    index("chat_messages_thread_seq_idx").on(table.threadId, table.seq),
   ]
 );
 
@@ -191,17 +177,9 @@ export const siteMembersRelations = relations(siteMembers, ({ one }) => ({
   }),
 }));
 
-export const chatThreadsRelations = relations(chatThreads, ({ one, many }) => ({
+export const chatThreadsRelations = relations(chatThreads, ({ one }) => ({
   user: one(user, {
     fields: [chatThreads.userId],
     references: [user.id],
-  }),
-  messages: many(chatMessages),
-}));
-
-export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
-  thread: one(chatThreads, {
-    fields: [chatMessages.threadId],
-    references: [chatThreads.id],
   }),
 }));

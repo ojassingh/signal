@@ -1,4 +1,4 @@
-import type { chatMessages, chatThreads, sites, user } from "@/db/schema";
+import type { chatThreads, sites, user } from "@/db/schema";
 
 export type User = typeof user.$inferSelect;
 
@@ -31,7 +31,6 @@ export type Site = typeof sites.$inferSelect;
 export type NewSite = typeof sites.$inferInsert;
 
 export type ChatThread = typeof chatThreads.$inferSelect;
-export type ChatMessage = typeof chatMessages.$inferSelect;
 
 export type ChatThreadListItem = {
   threadId: ChatThread["id"];
