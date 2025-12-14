@@ -26,6 +26,7 @@ export function authAction<Args extends unknown[], Return>(
       const data = await fn({ session }, ...args);
       return { success: true, data };
     } catch (error) {
+      console.error(error);
       if (error instanceof SignalError) {
         return {
           success: false,
@@ -37,8 +38,6 @@ export function authAction<Args extends unknown[], Return>(
           },
         };
       }
-
-      console.error(error);
       return { success: false, error: genericActionError };
     }
   };
