@@ -48,8 +48,13 @@ export default function Page() {
   const [input, setInput] = useState("");
   const queryClient = useQueryClient();
   const createThread = useMutation({
-    mutationFn: (domain: string) => createChatThread(domain),
-    onSuccess: () => {
+    mutationFn: ({ firstMessage }: { firstMessage: string }) =>
+      createChatThread(firstMessage),
+    onSuccess: (data) => {
+      if (!data.success) {
+        toast.error(data.error.message);
+        return;
+      }
       queryClient.refetchQueries({ queryKey: ["sidebar-data"] });
     },
   });
@@ -57,13 +62,9 @@ export default function Page() {
   const greeting = getGreeting(session.data?.user?.name);
 
   const submitText = async (text: string) => {
-    const domain = session.data?.session.activeDomain;
-    if (!domain) {
-      toast.error("Select an active domain first.");
-      return;
-    }
-
-    const result = await createThread.mutateAsync(domain);
+    const result = await createThread.mutateAsync({
+      firstMessage: text,
+    });
     if (!result.success) {
       toast.error(result.error.message);
       return;
