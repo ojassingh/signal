@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Square } from "lucide-react";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -15,7 +15,6 @@ import {
 } from "@/components/ai/prompt-input";
 import { LoadingPage } from "@/components/loading";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 import { TextShimmer } from "@/components/ui/text-shimmer";
 import { isValidUUID } from "@/lib/utils";
 import { ChatMessage } from "./chat-helpers";
@@ -39,7 +38,7 @@ export default function Page() {
     retry: false,
   });
 
-  const { messages, sendMessage, setMessages, status } = useChat({
+  const { messages, sendMessage, setMessages, status, stop } = useChat({
     onError: (error) => {
       toast.error(error.message || "Something went wrong.");
     },
@@ -113,7 +112,6 @@ export default function Page() {
         <div className="mx-auto w-full max-w-3xl px-4">
           <PromptInput
             className="w-full"
-            disabled={isLoading}
             isLoading={isLoading}
             onSubmit={handleSubmit}
             onValueChange={setInput}
@@ -124,13 +122,22 @@ export default function Page() {
               <PromptInputAction tooltip="Send">
                 <Button
                   className="rounded-full bg-primary text-primary-foreground"
-                  disabled={!input.trim() || isLoading}
-                  onClick={handleSubmit}
+                  onClick={() => {
+                    if (isLoading || status === "streaming") {
+                      stop();
+                    } else {
+                      handleSubmit();
+                    }
+                  }}
                   size="icon"
                   type="button"
                   variant="ghost"
                 >
-                  {isLoading ? <Spinner className="size-4" /> : <ArrowUp />}
+                  {isLoading || status === "streaming" ? (
+                    <Square className="size-4" fill="white" />
+                  ) : (
+                    <ArrowUp />
+                  )}
                 </Button>
               </PromptInputAction>
             </PromptInputActions>
