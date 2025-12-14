@@ -62,7 +62,7 @@ export default function Page() {
       toast.error(result.error.message);
       return;
     }
-
+    queryClient.refetchQueries({ queryKey: ["sidebar-data"] });
     sessionStorage.setItem(`chat:init:${result.data.threadId}`, text);
     router.push(`/dashboard/chat/${result.data.threadId}`);
   };
@@ -72,7 +72,6 @@ export default function Page() {
     if (!text || createThread.isPending) {
       return;
     }
-    queryClient.refetchQueries({ queryKey: ["sidebar-data"] });
     setInput("");
     await submitText(text);
   };
