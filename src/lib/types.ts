@@ -36,7 +36,6 @@ export type ChatThread = typeof chatThreads.$inferSelect;
 export type ChatThreadListItem = {
   threadId: ChatThread["id"];
   title: ChatThread["title"];
-  updatedAt: ChatThread["updatedAt"];
 };
 
 export type PageviewData = {

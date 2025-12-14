@@ -52,7 +52,6 @@ export const getSidebarData = authAction(
           .select({
             threadId: chatThreads.id,
             title: chatThreads.title,
-            updatedAt: chatThreads.updatedAt,
           })
           .from(chatThreads)
           .where(
@@ -61,7 +60,7 @@ export const getSidebarData = authAction(
               eq(chatThreads.domain, activeDomain)
             )
           )
-          .orderBy(desc(chatThreads.updatedAt))
+          .orderBy(desc(chatThreads.createdAt))
           .limit(5)
       : [];
 

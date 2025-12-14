@@ -8,14 +8,20 @@ import { chatThreads } from "@/db/schema";
 import { authAction } from "@/lib/actions";
 import { SignalError } from "@/lib/errors";
 
-export async function createThreadTitle(prompt: string) {
+export async function createAndSaveThreadTitle(
+  threadId: string,
+  prompt: string
+) {
   const { text } = await generateText({
     model: openai("gpt-5-nano-2025-08-07"),
-    system:
-      "You are a skilled assistant for a product called Signal which is an AI growth engine for SEO and AI search. Your task is to generate a clear, concise, and compelling thread title that summarizes the user's first message. Use 3-5 words, focus on the core topic, and avoid unnecessary words, punctuation, or formatting (such as quotes). Respond with only the title text.",
-    prompt,
+    prompt: `You are a skilled assistant for a product called Signal which is an AI growth engine for SEO and AI search. Your task is to generate a clear, concise, and compelling thread title that summarizes the user's first message. Use 3-5 words, focus on the core topic, and avoid unnecessary words, punctuation, or formatting (such as quotes). Respond with only the title text.
+    Here's the user's first message: ${prompt}`,
   });
   const title = text.slice(0, 80);
+  await db
+    .update(chatThreads)
+    .set({ title, updatedAt: new Date() })
+    .where(eq(chatThreads.id, threadId));
   return title;
 }
 
@@ -35,13 +41,7 @@ export const createChatThread = authAction(
     }
 
     if (firstMessage?.trim()) {
-      const title = await createThreadTitle(firstMessage);
-      if (title) {
-        await db
-          .update(chatThreads)
-          .set({ title, updatedAt: new Date() })
-          .where(eq(chatThreads.id, thread.id));
-      }
+      createAndSaveThreadTitle(thread.id, firstMessage);
     }
     return { threadId: thread.id };
   }
