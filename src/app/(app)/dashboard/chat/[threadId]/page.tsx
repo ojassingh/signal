@@ -16,8 +16,9 @@ import {
 import { LoadingPage } from "@/components/loading";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { TextShimmer } from "@/components/ui/text-shimmer";
 import { isValidUUID } from "@/lib/utils";
-import { ChatMessage, LoadingMessage } from "./chat-helpers";
+import { ChatMessage } from "./chat-helpers";
 
 const getThreadIdFromParam = (param: string | string[] | undefined) =>
   Array.isArray(param) ? (param[0] ?? "") : (param ?? "");
@@ -44,7 +45,7 @@ export default function Page() {
     },
   });
 
-  const isLoading = status === "streaming";
+  const isLoading = status === "submitted";
   const thread = data?.success ? data.data : null;
 
   useEffect(() => {
@@ -105,7 +106,7 @@ export default function Page() {
             message={message}
           />
         ))}
-        {status === "submitted" && <LoadingMessage />}
+        {isLoading ? <TextShimmer>Thinking...</TextShimmer> : null}
       </div>
       <div ref={bottomRef} />
       <div className="fixed inset-x-0 bottom-8 z-0 pl-(--sidebar-width)">

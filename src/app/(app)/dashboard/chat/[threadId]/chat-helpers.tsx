@@ -2,7 +2,6 @@
 
 import type { UIMessage } from "ai";
 import { Hammer } from "lucide-react";
-import { memo } from "react";
 import {
   ChainOfThought,
   ChainOfThoughtContent,
@@ -19,7 +18,7 @@ import {
   StepsItem,
   StepsTrigger,
 } from "@/components/ai/steps";
-import { Loader, TextShimmerLoader } from "@/components/ui/loader";
+import { TextShimmer } from "@/components/ui/text-shimmer";
 import type {
   DataPart,
   DynamicToolPart,
@@ -142,12 +141,6 @@ export const getAssistantExtras = (parts: Part[]): AssistantExtras => {
   };
 };
 
-export const LoadingMessage = memo(() => (
-  <div className="flex">
-    <Loader size="md" variant="text-shimmer" />
-  </div>
-));
-
 export function SourcesRow({
   messageId,
   sources,
@@ -189,7 +182,7 @@ export function StepsBlock({
     <Steps className="pl-2" defaultOpen={false}>
       <StepsTrigger leftIcon={<Hammer className="size-4" />}>
         {busy ? (
-          <TextShimmerLoader size="md" text={`Tool run: ${label}`} />
+          <TextShimmer>{`Tool run: ${label}`}</TextShimmer>
         ) : (
           `Tool run: ${label}`
         )}

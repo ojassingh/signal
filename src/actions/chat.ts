@@ -10,11 +10,10 @@ import { SignalError } from "@/lib/errors";
 
 export async function createThreadTitle(prompt: string) {
   const { text } = await generateText({
-    model: openai("gpt-5.1-nano"),
+    model: openai("gpt-5-nano-2025-08-07"),
     system:
-      "Write a short thread title (3-5 words) based on the user's first message. Return only the title text. No quotes or other formatting.",
+      "You are a skilled assistant for a product called Signal which is an AI growth engine for SEO and AI search. Your task is to generate a clear, concise, and compelling thread title that summarizes the user's first message. Use 3-5 words, focus on the core topic, and avoid unnecessary words, punctuation, or formatting (such as quotes). Respond with only the title text.",
     prompt,
-    temperature: 0.5,
   });
   const title = text.slice(0, 80);
   return title;
