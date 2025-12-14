@@ -1,6 +1,5 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { nextCookies } from "better-auth/next-js";
 import { sendWelcomeEmail } from "@/actions/email";
 import { db } from "@/db/drizzle";
 // biome-ignore lint/performance/noNamespaceImport: we need to use the schema object
@@ -46,6 +45,7 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
-  plugins: [nextCookies()],
-  trustedOrigins: [process.env.NEXT_PUBLIC_BASE_URL as string],
+  trustedOrigins: [process.env.NEXT_PUBLIC_BASE_URL].filter((v): v is string =>
+    Boolean(v)
+  ),
 });

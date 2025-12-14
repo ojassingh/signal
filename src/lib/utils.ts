@@ -28,7 +28,7 @@ export function getGreeting(name?: string | null) {
   return `Good ${dayPart}, ${firstName ? ` ${firstName}` : ""}.`;
 }
 
-export function isValidUUID(value: string) {
+export function isValidUUID(value?: string) {
   const uiud = z.uuid();
-  return uiud.safeParse(value).success;
+  return Boolean(value) && uiud.safeParse(value).success;
 }

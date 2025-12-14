@@ -2,10 +2,10 @@
 
 import { useChat } from "@ai-sdk/react";
 import { useQuery } from "@tanstack/react-query";
-import { DefaultChatTransport } from "ai";
 import { ArrowUp } from "lucide-react";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { getChatThread } from "@/actions/chat";
 import {
   PromptInput,
@@ -39,7 +39,9 @@ export default function Page() {
   });
 
   const { messages, sendMessage, setMessages, status } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    onError: (error) => {
+      toast.error(error.message || "Something went wrong.");
+    },
   });
 
   const isLoading = status === "streaming";
