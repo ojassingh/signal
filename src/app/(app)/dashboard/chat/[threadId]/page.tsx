@@ -119,7 +119,9 @@ export default function Page() {
           >
             <PromptInputTextarea placeholder="Ask about your traffic, growth ideas, or research anything…" />
             <PromptInputActions className="justify-end">
-              <PromptInputAction tooltip="Send">
+              <PromptInputAction
+                tooltip={isLoading || status === "streaming" ? "Stop" : "Send"}
+              >
                 <Button
                   className="rounded-full bg-primary text-primary-foreground"
                   onClick={() => {
