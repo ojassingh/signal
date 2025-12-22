@@ -32,10 +32,10 @@ export function registerChatRoutes(app: Elysia) {
         );
       }
 
-      const start = Date.now();
-      const session = await auth.api.getSession({ headers: request.headers });
-      const elapsed = Date.now() - start;
-      console.log("[API Chat Route] Time taken to get session:", elapsed, "ms");
+      const session = await auth.api.getSession({
+        headers: request.headers,
+        query: { disableCookieCache: true },
+      });
 
       if (!session) {
         const error = SignalError.Auth.Unauthorized();
