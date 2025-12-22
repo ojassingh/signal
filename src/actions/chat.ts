@@ -112,7 +112,7 @@ export const getUserChatThreads = authAction(
         title: chatThreads.title,
       })
       .from(chatThreads)
-      .where(and(eq(chatThreads.userId, session.user.id)))
+      .where(eq(chatThreads.userId, session.user.id))
       .orderBy(desc(chatThreads.createdAt))
       .limit(5)
 );

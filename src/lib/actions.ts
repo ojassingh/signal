@@ -23,6 +23,8 @@ export async function setDefaultDomain(session: Session) {
       .where(eq(sessionTable.id, session.session.id));
     session.session.activeDomain = site.domain;
   }
+
+  return site?.domain;
 }
 
 export function authAction<Args extends unknown[], Return>(
