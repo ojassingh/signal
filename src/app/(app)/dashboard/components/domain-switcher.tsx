@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 export function DomainSwitcher() {
   const queryClient = useQueryClient();
   const session = useSession();
-  const activeDomain = session.data?.session.activeDomain;
+
   const { data: sitesData } = useQuery({
     queryKey: ["user-sites"],
     queryFn: getUserSites,
@@ -26,6 +26,7 @@ export function DomainSwitcher() {
   });
 
   const sites = sitesData?.success ? sitesData.data : [];
+  const activeDomain = session.data?.session.activeDomain ?? sites[0]?.domain;
   const { mutate, isPending } = useMutation({
     mutationFn: (domain: string) => setActiveDomain(domain),
     onSuccess: async (result) => {
