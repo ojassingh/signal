@@ -11,7 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getSession, useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
@@ -44,21 +43,17 @@ export function DomainSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        {activeDomain ? (
-          <Button
-            className="justify-between"
-            disabled={isPending}
-            variant="outline"
-          >
-            <span className="flex items-center gap-2">
-              <Globe2 className="h-4 w-4" />
-              <span>{activeDomain}</span>
-            </span>
-            <ChevronsUpDown className="h-4 w-4 opacity-50" />
-          </Button>
-        ) : (
-          <Skeleton className="h-9 w-full rounded-md" />
-        )}
+        <Button
+          className="justify-between"
+          disabled={isPending}
+          variant="outline"
+        >
+          <span className="flex items-center gap-2">
+            <Globe2 className="h-4 w-4" />
+            <span>{activeDomain}</span>
+          </span>
+          <ChevronsUpDown className="h-4 w-4 opacity-50" />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[240px]">
         {sites.map((site) => {
