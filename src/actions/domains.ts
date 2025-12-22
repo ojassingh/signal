@@ -2,79 +2,25 @@
 
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db/drizzle";
-import { chatThreads, session as sessionTable, sites } from "@/db/schema";
+import { session as sessionTable, sites } from "@/db/schema";
 import { authAction } from "@/lib/actions";
 import { SignalError } from "@/lib/errors";
 import { queryPipe } from "@/lib/tinybird";
 import type {
-  ChatThreadListItem,
   DashboardOptions,
   Site,
   TinybirdSiteDashboardRow,
-  User,
 } from "@/lib/types";
 import { DateRangeKey, Grain } from "@/lib/types";
-import { computeRange, reduceDashboardRows } from "./site-helpers";
+import { computeRange, reduceDashboardRows } from "./helpers";
 
-export const getSidebarData = authAction(
-  async ({
-    session,
-  }): Promise<{
-    user: Partial<User>;
-    sites: Site[];
-    activeDomain: string | null;
-    threads: ChatThreadListItem[];
-  }> => {
-    const userSites = await db
+export const getUserSites = authAction(
+  async ({ session }): Promise<Site[]> =>
+    db
       .select()
       .from(sites)
       .where(eq(sites.ownerId, session.user.id))
-      .orderBy(desc(sites.createdAt));
-
-    const [storedSession] = await db
-      .select({ activeDomain: sessionTable.activeDomain })
-      .from(sessionTable)
-      .where(eq(sessionTable.id, session.session.id))
-      .limit(1);
-
-    const storedActiveDomain = storedSession?.activeDomain ?? null;
-    const activeDomain = storedActiveDomain ?? userSites[0]?.domain ?? null;
-
-    if (activeDomain && activeDomain !== storedActiveDomain) {
-      await db
-        .update(sessionTable)
-        .set({ activeDomain })
-        .where(eq(sessionTable.id, session.session.id));
-    }
-
-    const threads = activeDomain
-      ? await db
-          .select({
-            threadId: chatThreads.id,
-            title: chatThreads.title,
-          })
-          .from(chatThreads)
-          .where(
-            and(
-              eq(chatThreads.userId, session.user.id),
-              eq(chatThreads.domain, activeDomain)
-            )
-          )
-          .orderBy(desc(chatThreads.createdAt))
-          .limit(5)
-      : [];
-
-    return {
-      user: {
-        name: session.user.name,
-        email: session.user.email,
-        image: session.user.image ?? null,
-      },
-      sites: userSites,
-      activeDomain,
-      threads,
-    };
-  }
+      .orderBy(desc(sites.createdAt))
 );
 
 export const createSite = authAction(

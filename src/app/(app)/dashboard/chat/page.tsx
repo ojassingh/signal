@@ -62,7 +62,7 @@ export default function Page() {
       toast.error(result.error.message);
       return;
     }
-    queryClient.refetchQueries({ queryKey: ["sidebar-data"] });
+    queryClient.refetchQueries({ queryKey: ["chat-threads"] });
     sessionStorage.setItem(`chat:init:${result.data.threadId}`, text);
     router.push(`/dashboard/chat/${result.data.threadId}`);
   };

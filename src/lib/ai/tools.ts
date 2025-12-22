@@ -2,7 +2,7 @@ import { tool } from "ai";
 import { and, eq } from "drizzle-orm";
 import Exa from "exa-js";
 import { z } from "zod";
-import { computeRange, reduceDashboardRows } from "@/actions/site-helpers";
+import { computeRange, reduceDashboardRows } from "@/actions/helpers";
 import { db } from "@/db/drizzle";
 import { sites } from "@/db/schema";
 import type { auth } from "@/lib/auth";

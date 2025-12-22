@@ -5,7 +5,7 @@ import { defaultTo, isEmpty } from "lodash";
 import { Eye, Users } from "lucide-react";
 import Link from "next/link";
 import { Area, AreaChart, Bar, BarChart, XAxis, YAxis } from "recharts";
-import { getActiveSiteStats } from "@/actions/sites";
+import { getActiveSiteStats } from "@/actions/domains";
 import { LoadingPage } from "@/components/loading";
 import {
   Card,

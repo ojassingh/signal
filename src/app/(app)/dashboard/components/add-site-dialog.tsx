@@ -5,7 +5,7 @@ import { Check, Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createSite } from "@/actions/sites";
+import { createSite } from "@/actions/domains";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

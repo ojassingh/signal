@@ -1,11 +1,19 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, MessageCircle, PlusSquare, Sparkles } from "lucide-react";
+import { map } from "lodash";
+import {
+  BarChart3,
+  History,
+  MessageCirclePlus,
+  PencilRuler,
+  Sparkles,
+  Text,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type * as React from "react";
-import { getSidebarData } from "@/actions/sites";
+import { getUserChatThreads } from "@/actions/chat";
 import {
   Sidebar,
   SidebarContent,
@@ -20,37 +28,34 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "@/lib/auth-client";
 import { DomainSwitcher } from "./domain-switcher";
 import { NavUser } from "./nav-user";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
-  const { data, isLoading } = useQuery({
-    queryKey: ["sidebar-data"],
-    queryFn: getSidebarData,
+  const session = useSession();
+  const activeDomain = session.data?.session.activeDomain;
+
+  const { data: threadsData, isLoading: threadsLoading } = useQuery({
+    queryKey: ["chat-threads", activeDomain],
+    queryFn: getUserChatThreads,
     staleTime: 5 * 60 * 1000,
+    enabled: !!session.data && !!activeDomain,
   });
 
-  const sidebarData = data?.success ? data.data : null;
-  const sites = sidebarData?.sites ?? [];
-  const user = sidebarData?.user;
-  const activeDomain = sidebarData?.activeDomain ?? null;
-  const threads = sidebarData?.threads ?? [];
+  const threads = threadsData?.success ? threadsData.data : [];
 
   return (
     <Sidebar className="min-h-screen" collapsible="none" {...props}>
       <SidebarHeader>
-        {isLoading ? (
-          <Skeleton className="h-12 w-full rounded-lg" />
-        ) : (
-          <DomainSwitcher activeDomain={activeDomain} sites={sites} />
-        )}
+        <DomainSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Agent</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-0">
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
@@ -60,24 +65,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   }
                 >
                   <Link href="/dashboard/chat">
-                    <PlusSquare />
+                    <MessageCirclePlus />
                     <span>Chat</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              {threads.map((t) => (
-                <SidebarMenuItem key={t.threadId}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === `/dashboard/chat/${t.threadId}`}
-                  >
-                    <Link href={`/dashboard/chat/${t.threadId}`}>
-                      <MessageCircle />
-                      <span>{t.title ?? "Untitled"}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {threadsLoading
+                ? map(new Array(3), (_, index) => (
+                    <SidebarMenuItem key={index}>
+                      <Skeleton className="h-6 w-full rounded-lg" />
+                    </SidebarMenuItem>
+                  ))
+                : threads.map((t) => (
+                    <SidebarMenuItem key={t.threadId}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === `/dashboard/chat/${t.threadId}`}
+                      >
+                        <Link
+                          className="text-muted-foreground text-sm"
+                          href={`/dashboard/chat/${t.threadId}`}
+                        >
+                          <History className="" />
+                          <span className="">{t.title ?? "Untitled"}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -96,6 +110,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>AI Search</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
@@ -103,7 +124,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 >
                   <Link href="/dashboard/ai-search">
                     <Sparkles />
-                    <span>AI Search</span>
+                    <span>Evals</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith("/dashboard/prompts")}
+                >
+                  <Link href="/dashboard/prompts">
+                    <Text />
+                    <span>Prompts</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Content</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith("/dashboard/content")}
+                >
+                  <Link href="/dashboard/content">
+                    <PencilRuler />
+                    <span>Content</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -112,11 +162,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        {isLoading ? (
-          <Skeleton className="mx-2 h-12 rounded-lg" />
-        ) : (
-          <NavUser user={user} />
-        )}
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

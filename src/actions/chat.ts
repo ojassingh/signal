@@ -7,6 +7,7 @@ import { db } from "@/db/drizzle";
 import { chatThreads } from "@/db/schema";
 import { authAction } from "@/lib/actions";
 import { SignalError } from "@/lib/errors";
+import type { ChatThreadListItem } from "@/lib/types";
 
 export async function createAndSaveThreadTitle(
   threadId: string,
@@ -101,4 +102,17 @@ export const getChatThread = authAction(
       messages: thread.messages ?? [],
     };
   }
+);
+
+export const getUserChatThreads = authAction(
+  async ({ session }): Promise<ChatThreadListItem[]> =>
+    db
+      .select({
+        threadId: chatThreads.id,
+        title: chatThreads.title,
+      })
+      .from(chatThreads)
+      .where(and(eq(chatThreads.userId, session.user.id)))
+      .orderBy(desc(chatThreads.createdAt))
+      .limit(5)
 );

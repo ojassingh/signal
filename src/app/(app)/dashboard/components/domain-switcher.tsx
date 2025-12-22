@@ -1,9 +1,9 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronsUpDown, Globe2 } from "lucide-react";
 import { toast } from "sonner";
-import { setActiveDomain } from "@/actions/sites";
+import { getUserSites, setActiveDomain } from "@/actions/domains";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,29 +11,29 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSidebar } from "@/components/ui/sidebar";
-import type { Site } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getSession, useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
-export function DomainSwitcher({
-  sites,
-  activeDomain,
-}: {
-  sites: Site[];
-  activeDomain?: string | null;
-}) {
-  const { state } = useSidebar();
+export function DomainSwitcher() {
   const queryClient = useQueryClient();
-  const current =
-    sites.find((site) => site.domain === activeDomain) ?? sites[0];
+  const session = useSession();
+  const activeDomain = session.data?.session.activeDomain;
+  const { data: sitesData } = useQuery({
+    queryKey: ["user-sites"],
+    queryFn: getUserSites,
+    staleTime: 5 * 60 * 1000,
+    enabled: !!session.data,
+  });
+
+  const sites = sitesData?.success ? sitesData.data : [];
   const { mutate, isPending } = useMutation({
     mutationFn: (domain: string) => setActiveDomain(domain),
     onSuccess: async (result) => {
       if (result.success) {
-        await Promise.all([
-          queryClient.refetchQueries({ queryKey: ["sidebar-data"] }),
-          queryClient.refetchQueries({ queryKey: ["active-site-stats"] }),
-        ]);
+        await getSession({ query: { disableCookieCache: true } });
+        await session.refetch();
+        queryClient.invalidateQueries({ queryKey: ["user-sites"] });
         toast.success(`Active domain set to ${result.data.activeDomain}`);
       } else {
         toast.error(`Failed to set active domain: ${result.error.message}`);
@@ -41,32 +41,28 @@ export function DomainSwitcher({
     },
   });
 
-  if (!current) {
-    return null;
-  }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          className="justify-between"
-          disabled={isPending}
-          variant="outline"
-        >
-          <span className="flex items-center gap-2">
-            <Globe2 className="h-4 w-4" />
-            {state === "expanded" && (
-              <span>{current.name || current.domain}</span>
-            )}
-          </span>
-          {state === "expanded" && (
+        {activeDomain ? (
+          <Button
+            className="justify-between"
+            disabled={isPending}
+            variant="outline"
+          >
+            <span className="flex items-center gap-2">
+              <Globe2 className="h-4 w-4" />
+              <span>{activeDomain}</span>
+            </span>
             <ChevronsUpDown className="h-4 w-4 opacity-50" />
-          )}
-        </Button>
+          </Button>
+        ) : (
+          <Skeleton className="h-9 w-full rounded-md" />
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[240px]">
         {sites.map((site) => {
-          const selected = site.domain === current.domain;
+          const selected = site.domain === activeDomain;
           return (
             <DropdownMenuItem
               className="flex items-center gap-2"

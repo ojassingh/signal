@@ -18,12 +18,19 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { signOut } from "@/lib/auth-client";
-import type { User } from "@/lib/types";
+import { signOut, useSession } from "@/lib/auth-client";
 
-export function NavUser({ user }: { user?: Partial<User> }) {
+export function NavUser() {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const session = useSession();
+  const user = session.data?.user
+    ? {
+        name: session.data.user.name,
+        email: session.data.user.email,
+        image: session.data.user.image ?? null,
+      }
+    : undefined;
 
   if (!user) {
     return null;

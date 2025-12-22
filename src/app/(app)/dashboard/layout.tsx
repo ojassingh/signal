@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AppBreadcrumb } from "@/components/app-breadcrumb";
 import { QueryProvider } from "@/components/query-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { setDefaultDomain } from "@/lib/actions";
 import { auth } from "@/lib/auth";
 import { AppSidebar } from "./components/app-sidebar";
 
@@ -17,6 +18,10 @@ export default async function AppLayout({
 
   if (!session) {
     redirect("/sign-in");
+  }
+
+  if (!session.session.activeDomain) {
+    await setDefaultDomain(session);
   }
 
   return (

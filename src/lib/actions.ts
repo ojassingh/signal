@@ -8,7 +8,7 @@ import type { ActionResponse } from "@/lib/types";
 
 type Session = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
 
-async function setDefaultDomain(session: Session) {
+export async function setDefaultDomain(session: Session) {
   const [site] = await db
     .select({ domain: sites.domain })
     .from(sites)
