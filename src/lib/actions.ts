@@ -1,17 +1,37 @@
+import { desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
+import { db } from "@/db/drizzle";
+import { session as sessionTable, sites } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { genericActionError, SignalError } from "@/lib/errors";
 import type { ActionResponse } from "@/lib/types";
 
 type Session = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>;
 
+async function setDefaultDomain(session: Session) {
+  const [site] = await db
+    .select({ domain: sites.domain })
+    .from(sites)
+    .where(eq(sites.ownerId, session.user.id))
+    .orderBy(desc(sites.createdAt))
+    .limit(1);
+
+  if (site) {
+    await db
+      .update(sessionTable)
+      .set({ activeDomain: site.domain })
+      .where(eq(sessionTable.id, session.session.id));
+    session.session.activeDomain = site.domain;
+  }
+}
+
 export function authAction<Args extends unknown[], Return>(
   fn: (ctx: { session: Session }, ...args: Args) => Promise<Return>
 ) {
   return async (...args: Args): Promise<ActionResponse<Return>> => {
-    const sessionHeaders = await headers();
     const session = await auth.api.getSession({
-      headers: sessionHeaders,
+      headers: await headers(),
+      query: { disableCookieCache: true },
     });
 
     if (!session) {
@@ -20,6 +40,10 @@ export function authAction<Args extends unknown[], Return>(
         success: false,
         error: { code: error.code, message: error.message },
       };
+    }
+
+    if (!session.session.activeDomain) {
+      await setDefaultDomain(session);
     }
 
     try {

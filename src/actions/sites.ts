@@ -111,12 +111,7 @@ export const createSite = authAction(
 
 export const getActiveSiteStats = authAction(
   async ({ session }, options: DashboardOptions = {}) => {
-    const [storedSession] = await db
-      .select({ activeDomain: sessionTable.activeDomain })
-      .from(sessionTable)
-      .where(eq(sessionTable.id, session.session.id))
-      .limit(1);
-    const activeDomain = storedSession?.activeDomain ?? null;
+    const activeDomain = session.session.activeDomain;
 
     if (!activeDomain) {
       throw SignalError.Site.NoActiveDomain();

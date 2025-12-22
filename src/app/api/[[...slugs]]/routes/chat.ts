@@ -64,9 +64,7 @@ export function registerChatRoutes(app: Elysia) {
         session.user.name?.trim()
           ? `The user's name is ${session.user.name.trim()}.`
           : "",
-        activeDomain?.trim()
-          ? `The active site domain is ${activeDomain.trim()}.`
-          : "The user has no active site domain selected yet.",
+        `The active site domain is ${activeDomain}.`,
       ]
         .filter(Boolean)
         .join(" ");
@@ -95,18 +93,10 @@ export function registerChatRoutes(app: Elysia) {
       return result.toUIMessageStreamResponse({
         originalMessages: inputMessages,
         onFinish: async ({ messages: finishedMessages }) => {
-          const startSave = Date.now();
           await db
             .update(chatThreads)
             .set({ messages: finishedMessages, updatedAt: new Date() })
             .where(eq(chatThreads.id, threadId));
-
-          const elapsedSave = Date.now() - startSave;
-          console.log(
-            "[API Chat Route] Time taken to update thread messages:",
-            elapsedSave,
-            "ms"
-          );
         },
       });
     } catch (error) {
