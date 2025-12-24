@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getSession, useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { AddSiteDialog } from "./add-site-dialog";
 
 export function DomainSwitcher() {
   const queryClient = useQueryClient();
@@ -73,14 +74,14 @@ export function DomainSwitcher() {
                 )}
               />
               <div className="flex flex-col">
-                <span className="text-sm">{site.name || site.domain}</span>
-                <span className="text-muted-foreground text-xs">
-                  {site.domain}
-                </span>
+                <span className="text-sm">{site.domain}</span>
               </div>
             </DropdownMenuItem>
           );
         })}
+        <DropdownMenuItem key="add">
+          <AddSiteDialog />
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

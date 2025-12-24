@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy } from "lucide-react";
+import { Check, CirclePlus, Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -31,7 +31,7 @@ export function AddSiteDialog() {
         toast.error(result.error.message);
         return;
       }
-      queryClient.invalidateQueries({ queryKey: ["sites"] });
+      queryClient.invalidateQueries({ queryKey: ["user-sites"] });
       setCreatedSiteId(result.data.id);
       toast.success("Site created successfully");
     },
@@ -76,7 +76,10 @@ export function AddSiteDialog() {
       open={open}
     >
       <DialogTrigger asChild>
-        <Button variant="sexy">Add Site</Button>
+        <p className="flex items-center gap-2">
+          <CirclePlus />
+          Add Site
+        </p>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
